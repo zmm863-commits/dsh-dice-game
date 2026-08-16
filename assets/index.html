@@ -1,0 +1,3872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🎲 骰子大作战 - 经典骰子游戏合集</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎲</text></svg>">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    display: flex;
+    flex-direction: column;
+    font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    overflow-x: hidden;
+    color: #fff;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* 顶部状态栏 */
+  .header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    z-index: 10;
+  }
+
+  .header h1 {
+    font-size: 1.2rem;
+    background: linear-gradient(135deg, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+  }
+
+  /* 模式切换 */
+  .mode-selector {
+    display: flex;
+    gap: 0;
+    background: rgba(0,0,0,0.3);
+    border-radius: 10px;
+    padding: 3px;
+  }
+
+  .mode-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .mode-btn.active {
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(124,58,237,0.4);
+  }
+
+  .round-badge {
+    background: rgba(167,139,250,0.2);
+    border: 1px solid rgba(167,139,250,0.4);
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: #a78bfa;
+    font-weight: 600;
+  }
+
+  /* 主游戏区域 */
+  .game-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 12px;
+    overflow-y: auto;
+  }
+
+  /* 作弊按钮 - 内联在玩家信息栏 */
+  .cheat-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 200, 50, 0.5);
+    background: rgba(255, 200, 50, 0.15);
+    color: #ffd700;
+    font-size: 1rem;
+    cursor: pointer;
+    z-index: 50;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .cheat-btn:hover {
+    background: rgba(255, 200, 50, 0.3);
+    border-color: rgba(255, 200, 50, 0.8);
+    box-shadow: 0 0 16px rgba(255, 200, 50, 0.3);
+    transform: scale(1.1);
+  }
+
+  .cheat-btn.active {
+    background: rgba(255, 200, 50, 0.3);
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 200, 50, 0.4);
+  }
+
+  /* 作弊提示 - 跟随按钮 */
+  .cheat-hint {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 200, 50, 0.9);
+    color: #1e1b4b;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 50;
+    white-space: nowrap;
+  }
+
+  .player-info {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .cheat-hint.show {
+    opacity: 1;
+  }
+
+  /* 玩家区域 */
+  .player-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.3s;
+  }
+
+  .player-zone.active-turn {
+    border-color: rgba(167,139,250,0.5);
+    box-shadow: 0 0 30px rgba(167,139,250,0.15);
+    background: rgba(167,139,250,0.05);
+  }
+
+  .player-zone.winner {
+    border-color: rgba(34,197,94,0.5);
+    box-shadow: 0 0 30px rgba(34,197,94,0.2);
+  }
+
+  .player-zone.loser {
+    border-color: rgba(239,68,68,0.5);
+    opacity: 0.7;
+  }
+
+  .player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
+  .avatar.computer {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+  }
+
+  .avatar.player {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+  }
+
+  .player-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+
+  .player-status {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* 骰子区域 */
+  .dice-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    min-height: 72px;
+    align-items: center;
+  }
+
+  .dice {
+    width: 60px; height: 60px;
+    background: linear-gradient(145deg, #ffffff, #e8e8e8);
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 8px;
+    gap: 2px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .dice.hidden {
+    background: linear-gradient(145deg, #4338ca, #312e81);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .dice.hidden::after {
+    content: '?';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 800;
+  }
+
+  .dice.shaking {
+    animation: shake-dice 0.6s ease-out;
+  }
+
+  @keyframes shake-dice {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    20% { transform: rotate(-15deg) scale(1.05); }
+    40% { transform: rotate(12deg) scale(0.98); }
+    60% { transform: rotate(-8deg) scale(1.02); }
+    80% { transform: rotate(5deg) scale(1); }
+  }
+
+  .dot {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transition: opacity 0.15s;
+  }
+
+  .dot.filled {
+    background: radial-gradient(circle at 35% 35%, #60a5fa, #1e40af);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 0 4px rgba(96,165,250,0.3);
+  }
+
+  .dot.filled.one {
+    background: radial-gradient(circle at 35% 35%, #ef4444, #b91c1c);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.3), 0 0 6px rgba(239,68,68,0.4);
+  }
+
+  .dot.empty { opacity: 0; }
+
+  /* 中间信息区 */
+  .center-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    min-height: 80px;
+    justify-content: center;
+  }
+
+  .bid-display {
+    text-align: center;
+    padding: 8px 20px;
+    background: rgba(167,139,250,0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(167,139,250,0.2);
+    min-width: 200px;
+  }
+
+  .bid-label {
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 2px;
+  }
+
+  .bid-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #a78bfa;
+    text-shadow: 0 0 10px rgba(167,139,250,0.5);
+  }
+
+  .bid-value .num { color: #f472b6; }
+
+  .game-msg {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    min-height: 20px;
+    font-weight: 500;
+  }
+
+  /* 叫点控制面板 */
+  .control-panel {
+    padding: 16px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* 其他按钮样式保持不变... */
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .num-group {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .control-label {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    font-weight: 600;
+  }
+
+  .num-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .num-btn:hover {
+    border-color: rgba(167,139,250,0.6);
+    background: rgba(167,139,250,0.15);
+  }
+
+  .num-btn.active {
+    border-color: #a78bfa;
+    background: rgba(167,139,250,0.25);
+    box-shadow: 0 0 12px rgba(167,139,250,0.4);
+  }
+
+  .num-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  /* 猜红蓝模式红/蓝按钮样式 */
+  /* 猜红点面板：11个按钮(0-10)，需要缩小才能排成一行 */
+  #redCountGroup .num-btn {
+    width: 30px; height: 30px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .red-display {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #ffd700;
+    text-align: center;
+    min-width: 80px;
+    padding: 8px 20px;
+    background: rgba(255,200,50,0.1);
+    border: 2px solid rgba(255,200,50,0.3);
+    border-radius: 12px;
+    text-shadow: 0 0 20px rgba(255,200,50,0.5);
+  }
+  .red-hint {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 4px 0;
+  }
+  #redBidDisplay {
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+  }
+
+  .red-confirm-hint {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    min-height: 18px;
+    transition: all 0.2s;
+  }
+
+  .red-confirm-hint.show {
+    color: rgba(255,200,50,0.9);
+  }
+
+  /* 猜红蓝模式红/蓝按钮样式 */
+  #redBlueRedGroup .num-btn.active {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+  }
+
+  #redBlueBlueGroup .num-btn.active {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.2);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+  }
+
+  /* 猜大小模式小/大按钮样式 */
+  #bigSmallSmallGroup .num-btn.active {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.2);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+  }
+
+  #bigSmallBigGroup .num-btn.active {
+    border-color: #f97316;
+    background: rgba(249, 115, 22, 0.2);
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.4);
+  }
+
+  /* 猜单双模式单/双按钮样式 */
+  #oddEvenOddGroup .num-btn.active {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.2);
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+  }
+
+  #oddEvenEvenGroup .num-btn.active {
+    border-color: #06b6d4;
+    background: rgba(6, 182, 212, 0.2);
+    box-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+  }
+
+  /* 猜顺子模式样式 */
+  .straight-mini-hint {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    text-align: center;
+    padding: 4px 0;
+  }
+
+  .straight-current {
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.7);
+    padding: 4px 0;
+    min-height: 28px;
+  }
+  .straight-current #straightSeq {
+    font-weight: 700;
+    color: #10b981;
+    letter-spacing: 2px;
+    font-size: 1.1rem;
+  }
+
+  #straightLenGroup {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #straightLenGroup .num-btn {
+    width: auto;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 8px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+  }
+
+  #straightLenGroup .num-btn.active {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.25);
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.5);
+  }
+
+  /* 结算弹窗骰子 */
+  /* 规则弹窗 */
+  .rules-modal {
+    max-width: 360px;
+    text-align: center;
+  }
+  .rules-header {
+    margin-bottom: 16px;
+  }
+  .rules-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+  }
+  .rules-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .rules-body {
+    text-align: left;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: rgba(255,255,255,0.85);
+  }
+  .rules-body .rule-item {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    gap: 8px;
+  }
+  .rules-body .rule-item:last-child {
+    border-bottom: none;
+  }
+  .rules-body .rule-emoji {
+    flex-shrink: 0;
+    width: 24px;
+    text-align: center;
+  }
+  .rules-body .rule-text {
+    flex: 1;
+  }
+  .rules-body .rule-highlight {
+    color: #10b981;
+    font-weight: 600;
+  }
+  .modal-dice {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0;
+    margin-top: 4px;
+  }
+  .modal-dice-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .modal-dice-label {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.6);
+    width: 40px;
+    flex-shrink: 0;
+  }
+  .modal-dice-row .dice {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
+    transform: none !important;
+  }
+  .modal-dice-row .dice .dot {
+    width: 5px;
+    height: 5px;
+  }
+  .modal-dice-row .dice .dot.filled {
+    box-shadow: 0 0 4px rgba(255,255,255,0.3);
+  }
+
+  /* 操作按钮 */
+  .action-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .action-btn {
+    padding: 12px 32px;
+    border-radius: 12px;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .btn-bid {
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+  }
+
+  .btn-bid:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(124,58,237,0.6);
+  }
+
+  .btn-challenge {
+    background: linear-gradient(135deg, #dc2626, #f87171);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(220,38,38,0.4);
+  }
+
+  .btn-challenge:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(220,38,38,0.6);
+  }
+
+  .btn-new {
+    background: linear-gradient(135deg, #059669, #34d399);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(5,150,105,0.4);
+  }
+
+  .btn-new:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(5,150,105,0.6);
+  }
+
+  .action-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  /* 结算弹窗 */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal {
+    background: linear-gradient(145deg, #1e1b4b, #312e81);
+    border-radius: 20px;
+    padding: 32px;
+    text-align: center;
+    border: 1px solid rgba(167,139,250,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-width: 340px;
+    width: 90%;
+    animation: modal-in 0.4s ease-out;
+  }
+
+  @keyframes modal-in {
+    from { transform: scale(0.8) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .modal-emoji {
+    font-size: 3rem;
+    margin-bottom: 12px;
+  }
+
+  .modal-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .modal-detail {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .modal-btn {
+    padding: 12px 40px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+
+  .modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(124,58,237,0.6);
+  }
+
+  /* 计分板 */
+  .scoreboard {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .score-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .score-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .score-dot.p { background: #3b82f6; }
+  .score-dot.c { background: #ef4444; }
+
+  /* 规则提示 */
+  .rules-hint {
+    text-align: center;
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.3);
+    padding: 0 16px;
+  }
+
+  /* 电脑思考动画 */
+  .thinking {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .thinking .dot-t {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #a78bfa;
+    animation: think-bounce 1.4s infinite ease-in-out;
+  }
+
+  .thinking .dot-t:nth-child(2) { animation-delay: 0.2s; }
+  .thinking .dot-t:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes think-bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+
+  /* 粒子背景 */
+  .particle {
+    position: fixed;
+    width: 3px; height: 3px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float-up linear infinite;
+    z-index: 0;
+  }
+
+  @keyframes float-up {
+    0% { transform: translateY(100vh) scale(0); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+  }
+
+  /* 封面页 */
+  .cover-page {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    transition: opacity 0.5s, transform 0.5s;
+    overflow: hidden;
+  }
+  .cover-page.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(1.05);
+  }
+
+  /* 联机模式样式 */
+  .mp-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+  }
+  .mp-overlay.show {
+    display: flex;
+  }
+  .mp-modal {
+    background: linear-gradient(145deg, #1e1b4b, #312e81);
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    border: 1px solid rgba(167,139,250,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-width: 360px;
+    width: 90%;
+  }
+  .mp-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .mp-subtitle {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 20px;
+  }
+  .mp-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .mp-option {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+    text-align: left;
+  }
+  .mp-option:hover {
+    border-color: rgba(167,139,250,0.5);
+    background: rgba(167,139,250,0.1);
+    transform: translateX(4px);
+  }
+  .mp-option-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+  .mp-option-name {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .mp-option-desc {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+  }
+  .mp-close {
+    padding: 10px 28px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mp-close:hover {
+    background: rgba(255,255,255,0.15);
+  }
+  .mp-qr-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .mp-qr-box {
+    width: 160px;
+    height: 160px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mp-room-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .mp-room-label {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+  }
+  .mp-room-code {
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255,200,50,0.5);
+  }
+  .mp-room-status {
+    font-size: 0.75rem;
+    color: rgba(34,197,94,0.8);
+  }
+  .mp-share-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .mp-share-btn, .mp-copy-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mp-share-btn {
+    background: linear-gradient(135deg, #07c160, #06ad56);
+    color: #fff;
+  }
+  .mp-share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(7,193,96,0.4);
+  }
+  .mp-copy-btn {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .mp-copy-btn:hover {
+    background: rgba(255,255,255,0.2);
+  }
+  .mp-join-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .mp-input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+    font-size: 1rem;
+    text-align: center;
+    letter-spacing: 3px;
+    font-weight: 700;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .mp-input:focus {
+    border-color: rgba(167,139,250,0.5);
+  }
+  .mp-join-submit {
+    padding: 12px 24px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .mp-join-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+  }
+  .mp-join-status {
+    font-size: 0.8rem;
+    min-height: 20px;
+    margin-bottom: 12px;
+  }
+  .mp-join-status.error {
+    color: #ef4444;
+  }
+  .mp-join-status.success {
+    color: #22c55e;
+  }
+  .mp-loading {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 20px 0;
+  }
+  .mp-loading-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #6366f1;
+    animation: mp-loading-anim 1.4s infinite;
+  }
+  .mp-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+  .mp-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes mp-loading-anim {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+  .mp-opponent-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 12px;
+    margin: 0 16px 8px;
+    font-size: 0.8rem;
+  }
+  .mp-opponent-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mp-opponent-avatar {
+    font-size: 1.2rem;
+  }
+  .mp-opponent-name {
+    font-weight: 600;
+  }
+  .mp-connection-status {
+    font-size: 0.7rem;
+    color: rgba(34,197,94,0.8);
+  }
+  .mp-connection-status.disconnected {
+    color: rgba(239,68,68,0.8);
+  }
+
+  .cover-bg-dice {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .cover-dice {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    font-size: 4rem;
+    opacity: 0.15;
+    animation: cover-float 8s ease-in-out infinite;
+    animation-delay: var(--delay);
+    filter: drop-shadow(0 0 20px rgba(255,200,50,0.4));
+  }
+
+  @keyframes cover-float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-20px) rotate(8deg); }
+    50% { transform: translateY(0) rotate(0deg); }
+    75% { transform: translateY(20px) rotate(-8deg); }
+  }
+
+  .cover-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .cover-subtitle {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  .cover-title {
+    font-size: 4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffd700, #ff6b6b, #a855f7, #ffd700);
+    background-size: 300% 300%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: cover-gradient 4s ease infinite;
+    text-shadow: 0 0 60px rgba(255,200,50,0.3);
+    line-height: 1.1;
+  }
+
+  @keyframes cover-gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .cover-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cover-mode-tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    max-width: 320px;
+  }
+  .cover-mode-tags span {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+  }
+
+  .cover-start-btn {
+    margin-top: 12px;
+    padding: 16px 48px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(255,200,50,0.4), inset 0 1px 0 rgba(255,255,255,0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  .cover-start-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+  .cover-start-btn:hover::before {
+    transform: translateX(100%);
+  }
+  .cover-start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,200,50,0.6), inset 0 1px 0 rgba(255,255,255,0.3);
+  }
+  .cover-start-btn:active {
+    transform: translateY(0);
+  }
+
+  .cover-hint {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 2px;
+  }
+
+  @media (max-width: 380px) {
+    .cover-title { font-size: 3rem; }
+    .cover-dice { font-size: 3rem; }
+    .cover-start-btn { padding: 14px 36px; font-size: 1rem; }
+    .cover-mode-tags { max-width: 280px; }
+    .cover-mode-tags span { font-size: 0.7rem; padding: 5px 10px; }
+  }
+
+  /* 响应式 */
+  @media (max-width: 380px) {
+    .dice { width: 50px; height: 50px; padding: 6px; }
+    .dice-row { gap: 8px; }
+    .num-btn { width: 32px; height: 32px; font-size: 0.85rem; }
+    .action-btn { padding: 10px 24px; font-size: 0.85rem; }
+  }
+</style>
+  <!-- 联机模式库 -->
+  <script src="peerjs.min.js"></script>
+  <script src="qrcode.min.js"></script>
+</head>
+<body>
+
+<!-- 封面页 -->
+<div class="cover-page" id="coverPage">
+  <div class="cover-bg-dice">
+    <div class="cover-dice" style="--delay:0s; --x:10%; --y:20%;">⚀</div>
+    <div class="cover-dice" style="--delay:1s; --x:80%; --y:15%;">⚄</div>
+    <div class="cover-dice" style="--delay:0.5s; --x:25%; --y:70%;">⚁</div>
+    <div class="cover-dice" style="--delay:1.5s; --x:70%; --y:75%;">⚅</div>
+    <div class="cover-dice" style="--delay:2s; --x:50%; --y:40%;">⚂</div>
+    <div class="cover-dice" style="--delay:0.8s; --x:90%; --y:50%;">⚃</div>
+  </div>
+  <div class="cover-content">
+    <div class="cover-subtitle">经典骰子游戏合集</div>
+    <h1 class="cover-title">骰子大作战</h1>
+    <div class="cover-desc">
+      <div class="cover-mode-tags">
+        <span>🎯 吹牛</span>
+        <span>🔴 猜红点</span>
+        <span>🔵 猜红蓝</span>
+        <span>⚖️ 猜大小</span>
+        <span>⚡ 猜单双</span>
+        <span>🎲 猜顺子</span>
+      </div>
+    </div>
+    <button class="cover-start-btn" id="coverStartBtn">
+      <span>🎮 开始游戏</span>
+    </button>
+    <div class="cover-hint">大晋城地区六种骰子经典玩法</div>
+  </div>
+</div>
+
+<!-- 联机模式选择弹窗 -->
+<div class="mp-overlay" id="mpModeOverlay">
+  <div class="mp-modal">
+    <div class="mp-title">选择模式</div>
+    <div class="mp-subtitle">选择单人或联机对战</div>
+    <div class="mp-options">
+      <button class="mp-option" id="mpSingleBtn">
+        <div class="mp-option-icon">🤖</div>
+        <div class="mp-option-name">单人模式</div>
+        <div class="mp-option-desc">与电脑AI对战</div>
+      </button>
+      <button class="mp-option" id="mpCreateBtn">
+        <div class="mp-option-icon">🏠</div>
+        <div class="mp-option-name">创建房间</div>
+        <div class="mp-option-desc">邀请好友加入</div>
+      </button>
+      <button class="mp-option" id="mpJoinBtn">
+        <div class="mp-option-icon">🔗</div>
+        <div class="mp-option-name">加入房间</div>
+        <div class="mp-option-desc">输入房间号加入</div>
+      </button>
+    </div>
+    <button class="mp-close" id="mpModeClose">取消</button>
+  </div>
+</div>
+
+<!-- 创建房间弹窗 -->
+<div class="mp-overlay" id="mpCreateOverlay">
+  <div class="mp-modal">
+    <div class="mp-title">创建房间</div>
+    <div class="mp-subtitle">等待好友加入</div>
+    <div class="mp-qr-area">
+      <div class="mp-qr-box" id="mpQrCode"></div>
+      <div class="mp-room-info">
+        <div class="mp-room-label">房间号</div>
+        <div class="mp-room-code" id="mpRoomCode">------</div>
+        <div class="mp-room-status" id="mpRoomStatus">正在连接...</div>
+      </div>
+    </div>
+    <div class="mp-share-area">
+      <button class="mp-share-btn" id="mpShareBtn">📤 发送给好友</button>
+      <button class="mp-copy-btn" id="mpCopyBtn">📋 复制房间号</button>
+    </div>
+    <button class="mp-close" id="mpCreateClose">取消</button>
+  </div>
+</div>
+
+<!-- 加入房间弹窗 -->
+<div class="mp-overlay" id="mpJoinOverlay">
+  <div class="mp-modal">
+    <div class="mp-title">加入房间</div>
+    <div class="mp-subtitle">输入好友的房间号</div>
+    <div class="mp-join-area">
+      <input type="text" class="mp-input" id="mpJoinCode" placeholder="输入6位房间号" maxlength="6">
+      <button class="mp-join-submit" id="mpJoinSubmit">加入</button>
+    </div>
+    <div class="mp-join-status" id="mpJoinStatus"></div>
+    <button class="mp-close" id="mpJoinClose">取消</button>
+  </div>
+</div>
+
+<!-- 连接中弹窗 -->
+<div class="mp-overlay" id="mpConnectOverlay">
+  <div class="mp-modal">
+    <div class="mp-title">连接中</div>
+    <div class="mp-subtitle" id="mpConnectText">正在建立连接...</div>
+    <div class="mp-loading">
+      <div class="mp-loading-dot"></div>
+      <div class="mp-loading-dot"></div>
+      <div class="mp-loading-dot"></div>
+    </div>
+    <button class="mp-close" id="mpConnectClose">取消</button>
+  </div>
+</div>
+
+<!-- 对手信息栏 -->
+<div class="mp-opponent-bar" id="mpOpponentBar" style="display:none;">
+  <div class="mp-opponent-info">
+    <div class="mp-opponent-avatar">👤</div>
+    <div class="mp-opponent-name" id="mpOpponentName">好友</div>
+  </div>
+  <div class="mp-connection-status" id="mpConnectionStatus">🟢 已连接</div>
+</div>
+
+<!-- 背景粒子 -->
+
+<div class="header">
+  <h1>🎲 骰子大作战</h1>
+  <div class="mode-selector">
+    <button class="mode-btn active" id="modeLiar">吹牛</button>
+    <button class="mode-btn" id="modeRed">猜红点</button>
+    <button class="mode-btn" id="modeRedBlue">猜红蓝</button>
+    <button class="mode-btn" id="modeBigSmall">猜大小</button>
+    <button class="mode-btn" id="modeOddEven">猜单双</button>
+    <button class="mode-btn" id="modeStraight">猜顺子</button>
+  </div>
+  <span class="round-badge" id="roundBadge">第 1 局</span>
+</div>
+
+<div class="game-area">
+  <!-- 电脑区域 -->
+  <div class="player-zone" id="computerZone">
+    <div class="player-info">
+      <div class="avatar computer">🤖</div>
+      <div>
+        <div class="player-name">电脑</div>
+        <div class="player-status" id="computerStatus">等待中...</div>
+      </div>
+    </div>
+    <div class="dice-row" id="computerDice"></div>
+  </div>
+
+  <!-- 中间信息 -->
+  <div class="center-panel">
+    <div class="bid-display">
+      <div class="bid-label">当前叫点</div>
+      <div class="bid-value" id="bidValue">尚未叫点</div>
+    </div>
+    <div class="game-msg" id="gameMsg">点击「开始新局」发骰子</div>
+    <div class="scoreboard">
+      <div class="score-item"><div class="score-dot p"></div> 你 <span id="playerWins">0</span> 胜</div>
+      <div class="score-item"><div class="score-dot c"></div> 电脑 <span id="computerWins">0</span> 胜</div>
+    </div>
+  </div>
+
+  <!-- 玩家区域 -->
+  <div class="player-zone" id="playerZone">
+    <div class="player-info">
+      <button class="cheat-btn" id="cheatBtn" title="👁️ 偷看电脑2颗骰子">👁️</button>
+      <div class="avatar player">😎</div>
+      <div>
+        <div class="player-name">你</div>
+        <div class="player-status" id="playerStatus">等待中...</div>
+      </div>
+    </div>
+    <div class="dice-row" id="playerDice"></div>
+  </div>
+  <div class="cheat-hint" id="cheatHint">偷看模式：电脑2颗骰子可见</div>
+</div>
+
+<!-- 叫点控制面板 -->
+<div class="control-panel" id="controlPanel">
+  <!-- 吹牛模式面板 -->
+  <div id="liarPanel">
+    <div class="control-row">
+      <div class="control-group">
+        <span class="control-label">数量</span>
+        <div class="num-group" id="countGroup">
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">点数</span>
+        <div class="num-group" id="valueGroup">
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="1">①</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-btns">
+      <button class="action-btn btn-bid" id="btnBid" disabled>📢 叫点</button>
+      <button class="action-btn btn-challenge" id="btnChallenge" disabled>🔍 开盅</button>
+      <button class="action-btn btn-new" id="btnNew">🎲 开始新局</button>
+    </div>
+    <div class="rules-hint">规则：1点为万能 · 叫点须大于上家 · 开盅验证所有骰子</div>
+  </div>
+
+  <!-- 猜红点模式面板 -->
+  <div id="redPanel" style="display:none;">
+    <div class="control-row">
+      <div class="control-group" style="flex-direction:column; align-items:center; gap:8px;">
+        <span class="control-label">当前叫点</span>
+        <div id="redBidDisplay" style="font-size:1.2rem;font-weight:700;color:rgba(255,255,255,0.8);padding:8px 20px;background:rgba(255,255,255,0.05);border-radius:8px;min-width:120px;text-align:center;">等待叫点...</div>
+      </div>
+    </div>
+    <div class="control-row">
+      <div class="control-group" style="flex-direction:column; align-items:center; gap:8px;">
+        <span class="control-label">叫点（点数字拼猜测）</span>
+        <div id="redDisplay" class="red-display">0</div>
+        <div id="redConfirmHint" class="red-confirm-hint">你确定你选0点吗？</div>
+        <div class="num-group" id="redCountGroup" style="max-width:280px;">
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn btn-clear" id="btnRedClear" style="width:auto;min-width:50px;padding:0 12px;font-size:0.75rem;">清除</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-btns" id="redActions">
+      <button class="action-btn btn-bid" id="btnRedBid" disabled>📢 加码</button>
+      <button class="action-btn btn-challenge" id="btnRedChallenge" disabled>🔍 开盅</button>
+      <button class="action-btn btn-new" id="btnRedNew">🎲 开始新局</button>
+    </div>
+    <div class="rules-hint">规则：①=1分 ④=4分 其他=0分，最高40分。叫点须大于上家。开盅验证双方总分</div>
+  </div>
+
+  <!-- 猜红蓝模式面板 -->
+  <div id="redBluePanel" style="display:none;">
+    <div class="control-row">
+      <div class="control-group">
+        <span class="control-label">🔴 红点</span>
+        <div class="num-group" id="redBlueRedGroup">
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">🔵 蓝点</span>
+        <div class="num-group" id="redBlueBlueGroup">
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-btns" id="redBlueActions">
+      <button class="action-btn btn-bid" id="btnRedBlueBid" disabled>📢 叫点</button>
+      <button class="action-btn btn-challenge" id="btnRedBlueChallenge" disabled>🔍 开盅</button>
+      <button class="action-btn btn-new" id="btnRedBlueNew">🎲 开始新局</button>
+    </div>
+    <div class="rules-hint">规则：①和④=红点 ②③⑤⑥=蓝点 · 叫X红Y蓝 · 须至少一项大于上家 · 开盅验证红蓝分别是否够数</div>
+  </div>
+
+  <!-- 猜大小模式面板 -->
+  <div id="bigSmallPanel" style="display:none;">
+    <div class="control-row">
+      <div class="control-group">
+        <span class="control-label">小 ①②③</span>
+        <div class="num-group" id="bigSmallSmallGroup">
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">大 ④⑤⑥</span>
+        <div class="num-group" id="bigSmallBigGroup">
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-btns" id="bigSmallActions">
+      <button class="action-btn btn-bid" id="btnBigSmallBid" disabled>📢 叫点</button>
+      <button class="action-btn btn-challenge" id="btnBigSmallChallenge" disabled>🔍 开盅</button>
+      <button class="action-btn btn-new" id="btnBigSmallNew">🎲 开始新局</button>
+    </div>
+    <div class="rules-hint">规则：①②③=小 ④⑤⑥=大 · 叫X小Y大 · 须至少一项大于上家 · 开盅验证小大分别是否够数</div>
+  </div>
+
+  <!-- 猜单双模式面板 -->
+  <div id="oddEvenPanel" style="display:none;">
+    <div class="control-row">
+      <div class="control-group">
+        <span class="control-label">单 ①③⑤</span>
+        <div class="num-group" id="oddEvenOddGroup">
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+      <div class="control-group">
+        <span class="control-label">双 ②④⑥</span>
+        <div class="num-group" id="oddEvenEvenGroup">
+          <button class="num-btn" data-val="0">0</button>
+          <button class="num-btn" data-val="1">1</button>
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+    </div>
+    <div class="action-btns" id="oddEvenActions">
+      <button class="action-btn btn-bid" id="btnOddEvenBid" disabled>📢 叫点</button>
+      <button class="action-btn btn-challenge" id="btnOddEvenChallenge" disabled>🔍 开盅</button>
+      <button class="action-btn btn-new" id="btnOddEvenNew">🎲 开始新局</button>
+    </div>
+    <div class="rules-hint">规则：①③⑤=单 ②④⑥=双 · 叫X单Y双 · 须至少一项大于上家 · 开盅验证单双分别是否够数</div>
+  </div>
+
+  <!-- 猜顺子模式面板 -->
+  <div id="straightPanel" style="display:none;">
+    <div class="control-row">
+      <div class="control-group">
+        <span class="control-label">选长度</span>
+        <div class="num-group" id="straightLenGroup">
+          <button class="num-btn" data-val="2">2</button>
+          <button class="num-btn" data-val="3">3</button>
+          <button class="num-btn" data-val="4">4</button>
+          <button class="num-btn" data-val="5">5</button>
+          <button class="num-btn" data-val="6">6</button>
+          <button class="num-btn" data-val="7">7</button>
+          <button class="num-btn" data-val="8">8</button>
+          <button class="num-btn" data-val="9">9</button>
+          <button class="num-btn" data-val="10">10</button>
+        </div>
+      </div>
+    </div>
+    <div class="straight-current" id="straightCurrent">当前叫点：<span id="straightSeq">-</span></div>
+    <div class="action-btns" id="straightActions">
+      <button class="action-btn btn-bid" id="btnStraightBid" disabled>📢 叫点</button>
+      <button class="action-btn btn-challenge" id="btnStraightChallenge" disabled>🔍 开盅</button>
+      <button class="action-btn btn-new" id="btnStraightNew">🎲 开始新局</button>
+    </div>
+    <div class="rules-hint">规则：从1开始组顺子，叫"12"起步(长度2)，每次+1递增。①=万能可补，开盅验双方骰子能否组成。先选长度，再点"叫点"确认。</div>
+  </div>
+</div>
+
+<!-- 结算弹窗 -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-emoji" id="modalEmoji">🎉</div>
+    <div class="modal-title" id="modalTitle">你赢了！</div>
+    <div class="modal-detail" id="modalDetail"></div>
+    <div class="modal-dice" id="modalDice"></div>
+    <button class="modal-btn" onclick="closeModal()">继续</button>
+  </div>
+</div>
+
+<!-- 规则弹窗 -->
+<div class="modal-overlay" id="rulesOverlay">
+  <div class="modal rules-modal">
+    <div class="rules-header">
+      <div class="rules-icon" id="rulesIcon">🎯</div>
+      <div class="rules-title" id="rulesTitle">玩法规则</div>
+    </div>
+    <div class="rules-body" id="rulesBody"></div>
+    <button class="modal-btn" onclick="closeRules()">知道了</button>
+  </div>
+</div>
+
+<script>
+// ============ 游戏状态 ============
+const DICE_PER_PLAYER = 5;
+let gameMode = 'liar'; // 'liar' | 'red' | 'redblue'
+let playerDice = [];
+let computerDice = [];
+let currentBid = null; // 吹牛: { count, value } | 猜红点: { count } | 猜红蓝: { red, blue }
+let currentTurn = 0; // 0=玩家, 1=电脑
+let roundNum = 1;
+let playerWins = 0;
+let computerWins = 0;
+let gamePhase = 'idle'; // idle, shaking, bidding, revealing, ended
+let selectCount = 0;
+let selectValue = 0;
+let cheatMode = false;
+let cheatUsedThisRound = false;
+let redGuess = 0; // 猜红点的猜测值
+let hasGuessed = false; // 是否已选择猜测值
+let redBlueRed = 0;   // 玩家叫的红点数
+let redBlueBlue = 0;  // 玩家叫的蓝点数
+let bigSmallSmall = 0;  // 玩家叫的小点数
+let bigSmallBig = 0;    // 玩家叫的大点数
+let oddEvenOdd = 0;     // 玩家叫的单点数
+let oddEvenEven = 0;    // 玩家叫的双点数
+let straightLen = 2;    // 玩家选中的顺子长度 (默认2)
+
+// ============ 骰子显示 ============
+const DOT_MAP = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+};
+
+// ①和④是红色，其他是蓝色
+function isRed(v) {
+  return v === 1 || v === 4;
+}
+
+function createDiceEl(value, hidden = false) {
+  const dice = document.createElement('div');
+  dice.className = 'dice' + (hidden ? ' hidden' : '');
+  dice.dataset.value = value;
+
+  for (let i = 0; i < 9; i++) {
+    const dot = document.createElement('div');
+    const isFilled = DOT_MAP[value].includes(i);
+    let dotClass = 'dot ';
+    if (isFilled) {
+      dotClass += 'filled' + (isRed(value) ? ' one' : '');
+    } else {
+      dotClass += 'empty';
+    }
+    dot.className = dotClass;
+    dice.appendChild(dot);
+  }
+
+  return dice;
+}
+
+function createDiceRowHTML(label, diceValues) {
+  let html = `<div class="modal-dice-row"><span class="modal-dice-label">${label}</span>`;
+  diceValues.forEach(v => {
+    html += `<div class="dice" data-value="${v}">`;
+    for (let i = 0; i < 9; i++) {
+      const isFilled = DOT_MAP[v].includes(i);
+      const cls = isFilled ? 'dot filled' + (isRed(v) ? ' one' : '') : 'dot empty';
+      html += `<div class="${cls}"></div>`;
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderDice() {
+  const pContainer = document.getElementById('playerDice');
+  const cContainer = document.getElementById('computerDice');
+
+  pContainer.innerHTML = '';
+  playerDice.forEach(v => pContainer.appendChild(createDiceEl(v, false)));
+
+  cContainer.innerHTML = '';
+  
+  // 作弊模式：随机选择2颗骰子显示真实值
+  let revealedIndices = [];
+  if (cheatMode && cheatUsedThisRound) {
+    const indices = [0, 1, 2, 3, 4];
+    // 随机选2颗
+    for (let i = 0; i < 2; i++) {
+      const randIdx = Math.floor(Math.random() * indices.length);
+      revealedIndices.push(indices.splice(randIdx, 1)[0]);
+    }
+  }
+  
+  computerDice.forEach((v, idx) => {
+    if (v === 0) {
+      // 还未收到对手骰子，显示占位
+      cContainer.appendChild(createDiceEl(1, true));
+    } else {
+      const isRevealed = cheatMode && cheatUsedThisRound && revealedIndices.includes(idx);
+      cContainer.appendChild(createDiceEl(v, !isRevealed && gamePhase !== 'revealing' && gamePhase !== 'ended'));
+    }
+  });
+}
+
+// ============ 掷骰子 ============
+function rollDice() {
+  playerDice = [];
+  computerDice = [];
+  for (let i = 0; i < DICE_PER_PLAYER; i++) {
+    playerDice.push(Math.floor(Math.random() * 6) + 1);
+    computerDice.push(Math.floor(Math.random() * 6) + 1);
+  }
+}
+
+// ============ 叫点逻辑 ============
+function canBid(count, value) {
+  if (!currentBid) return true;
+  if (count > currentBid.count) return true;
+  if (count === currentBid.count && value > currentBid.value) return true;
+  return false;
+}
+
+function countAllDice(value) {
+  // 计算所有骰子中某点数的总数（1点为万能）
+  let total = 0;
+  const all = [...playerDice, ...computerDice];
+  all.forEach(v => {
+    if (v === value || v === 1) total++;
+  });
+  return total;
+}
+
+function formatBid(bid) {
+  if (!bid) return '尚未叫点';
+  const v = bid.value === 1 ? '①(万能)' : bid.value;
+  return `<span class="num">${bid.count}</span> 个 <span class="num">${v}</span>`;
+}
+
+// ============ 模式切换 ============
+function switchMode(mode) {
+  gameMode = mode;
+  document.getElementById('modeLiar').classList.toggle('active', mode === 'liar');
+  document.getElementById('modeRed').classList.toggle('active', mode === 'red');
+  document.getElementById('modeRedBlue').classList.toggle('active', mode === 'redblue');
+  document.getElementById('modeBigSmall').classList.toggle('active', mode === 'bigsmall');
+  document.getElementById('modeOddEven').classList.toggle('active', mode === 'oddeven');
+  document.getElementById('modeStraight').classList.toggle('active', mode === 'straight');
+  document.getElementById('liarPanel').style.display = mode === 'liar' ? '' : 'none';
+  document.getElementById('redPanel').style.display = mode === 'red' ? '' : 'none';
+  document.getElementById('redBluePanel').style.display = mode === 'redblue' ? '' : 'none';
+  document.getElementById('bigSmallPanel').style.display = mode === 'bigsmall' ? '' : 'none';
+  document.getElementById('oddEvenPanel').style.display = mode === 'oddeven' ? '' : 'none';
+  document.getElementById('straightPanel').style.display = mode === 'straight' ? '' : 'none';
+  if (mode === 'liar') {
+    document.getElementById('bidValue').textContent = '尚未叫点';
+  } else if (mode === 'red') {
+    document.getElementById('bidValue').textContent = '猜红点总数（①=1 ④=4）';
+  } else if (mode === 'redblue') {
+    document.getElementById('bidValue').textContent = '猜红蓝 (X红Y蓝)';
+  } else if (mode === 'bigsmall') {
+    document.getElementById('bidValue').textContent = '猜大小 (X小Y大)';
+  } else if (mode === 'oddeven') {
+    document.getElementById('bidValue').textContent = '猜单双 (X单Y双)';
+  } else if (mode === 'straight') {
+    document.getElementById('bidValue').textContent = '猜顺子 (从1开始, 叫长度)';
+  }
+  resetGame();
+  // 显示规则弹窗
+  showRules(mode);
+}
+
+document.getElementById('modeLiar').addEventListener('click', () => switchMode('liar'));
+document.getElementById('modeRed').addEventListener('click', () => switchMode('red'));
+document.getElementById('modeRedBlue').addEventListener('click', () => switchMode('redblue'));
+document.getElementById('modeBigSmall').addEventListener('click', () => switchMode('bigsmall'));
+document.getElementById('modeOddEven').addEventListener('click', () => switchMode('oddeven'));
+document.getElementById('modeStraight').addEventListener('click', () => switchMode('straight'));
+
+// ============ 猜顺子事件 ============
+document.getElementById('straightLenGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  straightLen = parseInt(btn.dataset.val);
+  // 只选择长度，不立即叫点（等玩家点"叫点"按钮确认）
+  updateUI();
+});
+
+document.getElementById('btnStraightBid').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0) return;
+  if (!canStraightBid(straightLen)) return;
+  
+  currentBid = { start: 1, len: straightLen };
+  const seq = Array.from({length: straightLen}, (_, i) => i + 1).join('');
+  document.getElementById('gameMsg').textContent = `你叫了 ${seq}`;
+  currentTurn = 1;
+  updateUI();
+  if (mpGameActive) { mpSendBid(currentBid); }
+  else { setTimeout(() => computerStraightTurn(), 1000); }
+});
+
+document.getElementById('btnStraightChallenge').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  if (mpGameActive) { mpSendChallenge(); }
+  revealStraightJudge(0);
+});
+
+document.getElementById('btnStraightNew').addEventListener('click', () => {
+  if (gamePhase === 'shaking') return;
+  if (gamePhase === 'ended') roundNum++;
+  newRound();
+});
+
+function resetGame() {
+  gamePhase = 'idle';
+  currentBid = null;
+  selectCount = 0;
+  selectValue = 0;
+  redGuess = 0;
+  hasGuessed = false;
+  redBlueRed = 0;
+  redBlueBlue = 0;
+  bigSmallSmall = 0;
+  bigSmallBig = 0;
+  oddEvenOdd = 0;
+  oddEvenEven = 0;
+  roundNum = 1;
+  cheatMode = false;
+  cheatUsedThisRound = false;
+  document.getElementById('cheatBtn').classList.remove('active');
+  document.getElementById('cheatHint').classList.remove('show');
+  if (document.getElementById('totalNumber')) document.getElementById('totalNumber').textContent = '-';
+  document.getElementById('playerWins').textContent = '0';
+  document.getElementById('computerWins').textContent = '0';
+  document.getElementById('playerZone').classList.remove('winner', 'loser', 'active-turn');
+  document.getElementById('computerZone').classList.remove('winner', 'loser', 'active-turn');
+  renderDice();
+  updateUI();
+}
+
+// ============ 游戏流程 ============
+function newRound() {
+  gamePhase = 'shaking';
+  currentBid = null;
+  selectCount = 0;
+  selectValue = 0;
+  redGuess = 0;
+  hasGuessed = false;
+  redBlueRed = 0;
+  redBlueBlue = 0;
+  bigSmallSmall = 0;
+  bigSmallBig = 0;
+  oddEvenOdd = 0;
+  oddEvenEven = 0;
+  cheatMode = false;
+  cheatUsedThisRound = false;
+  document.getElementById('cheatBtn').classList.remove('active');
+  document.getElementById('cheatHint').classList.remove('show');
+
+  // 掷骰子动画
+  if (mpGameActive) {
+    // 联机模式：只生成自己的骰子
+    playerDice = [];
+    for (let i = 0; i < DICE_PER_PLAYER; i++) {
+      playerDice.push(Math.floor(Math.random() * 6) + 1);
+    }
+    computerDice = [0, 0, 0, 0, 0]; // 0 表示还未收到对手骰子
+  } else {
+    rollDice();
+  }
+  renderDice();
+  
+  // 联机模式：发送骰子给对手
+  if (mpGameActive) {
+    mpMyDice = [...playerDice];
+    mpSendDice();
+  }
+
+  document.querySelectorAll('.dice').forEach(d => d.classList.add('shaking'));
+
+  setTimeout(() => {
+    document.querySelectorAll('.dice').forEach(d => d.classList.remove('shaking'));
+    
+    // 联机模式
+    if (mpGameActive) {
+      // 等待双方都收到骰子后再开始
+      if (computerDice[0] === 0) {
+        gamePhase = 'waiting';
+        document.getElementById('gameMsg').textContent = '等待对手骰子...';
+        updateUI();
+      } else {
+        startBidding();
+      }
+      return;
+    }
+    
+    if (gameMode === 'liar' || gameMode === 'redblue' || gameMode === 'bigsmall' || gameMode === 'oddeven' || gameMode === 'straight') {
+      gamePhase = 'bidding';
+      currentTurn = Math.random() < 0.5 ? 0 : 1;
+      if (currentTurn === 1) {
+        if (gameMode === 'liar') {
+          setTimeout(() => computerTurn(), 1200);
+        } else if (gameMode === 'redblue') {
+          setTimeout(() => computerRedBlueTurn(), 1200);
+        } else if (gameMode === 'bigsmall') {
+          setTimeout(() => computerBigSmallTurn(), 1200);
+        } else if (gameMode === 'oddeven') {
+          setTimeout(() => computerOddEvenTurn(), 1200);
+        } else {
+          setTimeout(() => computerStraightTurn(), 1200);
+        }
+      }
+    } else if (gameMode === 'red') {
+      gamePhase = 'bidding';
+      currentTurn = Math.random() < 0.5 ? 0 : 1;
+      if (currentTurn === 1) {
+        setTimeout(() => computerRedTurn(), 1200);
+      }
+    }
+    updateUI();
+  }, 800);
+
+  updateUI();
+}
+
+function startBidding() {
+  gamePhase = 'bidding';
+  currentTurn = mpIsHost ? 0 : 1;
+  if (currentTurn === 1) {
+    document.getElementById('gameMsg').textContent = '对手正在思考...';
+  } else {
+    document.getElementById('gameMsg').textContent = '轮到你叫点';
+  }
+  updateUI();
+}
+
+function updateUI() {
+  // 更新叫点/猜红点/猜红蓝/猜大小/猜单双显示
+  if (gameMode === 'liar') {
+    document.getElementById('bidValue').innerHTML = formatBid(currentBid);
+  } else if (gameMode === 'red') {
+    // 猜红点：叫点显示 + 玩家猜测
+    const redDisplay = document.getElementById('redDisplay');
+    const redConfirmHint = document.getElementById('redConfirmHint');
+    const redBidDisplay = document.getElementById('redBidDisplay');
+    
+    if (redBidDisplay) {
+      if (currentBid) {
+        redBidDisplay.textContent = `当前叫点: ${currentBid.total} 点`;
+      } else {
+        redBidDisplay.textContent = '等待叫点...';
+      }
+    }
+    if (redDisplay) {
+      redDisplay.textContent = redGuess;
+    }
+    if (redConfirmHint) {
+      // 玩家选完数字后显示确认提示（无论先后手）
+      if (hasGuessed && redGuess > 0 && gamePhase === 'bidding') {
+        redConfirmHint.textContent = `你确定你选${redGuess}点吗？`;
+        redConfirmHint.classList.add('show');
+      } else {
+        redConfirmHint.classList.remove('show');
+      }
+    }
+  } else if (gameMode === 'redblue') {
+    if (currentBid) {
+      document.getElementById('bidValue').innerHTML = `当前叫点: <span class="num">${currentBid.red}</span>红 <span class="num">${currentBid.blue}</span>蓝`;
+    } else {
+      document.getElementById('bidValue').textContent = '猜红蓝 (X红Y蓝)';
+    }
+  } else if (gameMode === 'bigsmall') {
+    if (currentBid) {
+      document.getElementById('bidValue').innerHTML = `当前叫点: <span class="num">${currentBid.small}</span>小 <span class="num">${currentBid.big}</span>大`;
+    } else {
+      document.getElementById('bidValue').textContent = '猜大小 (X小Y大)';
+    }
+  } else if (gameMode === 'oddeven') {
+    if (currentBid) {
+      document.getElementById('bidValue').innerHTML = `当前叫点: <span class="num">${currentBid.odd}</span>单 <span class="num">${currentBid.even}</span>双`;
+    } else {
+      document.getElementById('bidValue').textContent = '猜单双 (X单Y双)';
+    }
+  } else if (gameMode === 'straight') {
+    if (currentBid) {
+      const seq = Array.from({length: currentBid.len}, (_, i) => i + 1).join('');
+      document.getElementById('bidValue').innerHTML = `当前叫点: <span class="num">${seq}</span> (长${currentBid.len})`;
+    } else {
+      document.getElementById('bidValue').textContent = '猜顺子 (从1开始, 叫长度)';
+    }
+    // 显示当前叫点和万能1数量
+    const seqEl = document.getElementById('straightSeq');
+    if (seqEl) seqEl.textContent = currentBid ? Array.from({length: currentBid.len}, (_, i) => i + 1).join('') : '-';
+  }
+
+  // 更新回合高亮
+  document.getElementById('playerZone').classList.toggle('active-turn', currentTurn === 0 && gamePhase === 'bidding');
+  document.getElementById('computerZone').classList.toggle('active-turn', currentTurn === 1 && gamePhase === 'bidding');
+
+  // 更新状态
+  if (gamePhase === 'bidding') {
+    document.getElementById('playerStatus').textContent = currentTurn === 0 ? '轮到你叫点...' : '等待电脑...';
+    document.getElementById('computerStatus').textContent = currentTurn === 1 ? '思考中...' : '等待中...';
+
+    if (currentTurn === 1) {
+      document.getElementById('computerStatus').innerHTML = '<div class="thinking"><div class="dot-t"></div><div class="dot-t"></div><div class="dot-t"></div></div>';
+    }
+  }
+
+  // 按钮状态
+  const isPlayerTurn = gamePhase === 'bidding' && currentTurn === 0;
+  
+  if (gameMode === 'liar') {
+    document.getElementById('btnBid').disabled = !isPlayerTurn || selectCount === 0 || selectValue === 0 || !canBid(selectCount, selectValue);
+    document.getElementById('btnChallenge').disabled = !isPlayerTurn || !currentBid;
+  } else if (gameMode === 'red') {
+    document.getElementById('btnRedBid').disabled = !isPlayerTurn || !hasGuessed || redGuess <= 0 || (currentBid && redGuess <= currentBid.total);
+    document.getElementById('btnRedChallenge').disabled = !isPlayerTurn || !currentBid;
+    document.getElementById('btnRedNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+  } else if (gameMode === 'redblue') {
+    document.getElementById('btnRedBlueBid').disabled = !isPlayerTurn || !canRedBlueBid(redBlueRed, redBlueBlue);
+    document.getElementById('btnRedBlueChallenge').disabled = !isPlayerTurn || !currentBid;
+    document.getElementById('btnRedBlueNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+  } else if (gameMode === 'bigsmall') {
+    document.getElementById('btnBigSmallBid').disabled = !isPlayerTurn || !canBigSmallBid(bigSmallSmall, bigSmallBig);
+    document.getElementById('btnBigSmallChallenge').disabled = !isPlayerTurn || !currentBid;
+    document.getElementById('btnBigSmallNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+  } else if (gameMode === 'oddeven') {
+    document.getElementById('btnOddEvenBid').disabled = !isPlayerTurn || !canOddEvenBid(oddEvenOdd, oddEvenEven);
+    document.getElementById('btnOddEvenChallenge').disabled = !isPlayerTurn || !currentBid;
+    document.getElementById('btnOddEvenNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+  } else if (gameMode === 'straight') {
+    document.getElementById('btnStraightBid').disabled = !isPlayerTurn || !canStraightBid(straightLen);
+    document.getElementById('btnStraightChallenge').disabled = !isPlayerTurn || !currentBid;
+    document.getElementById('btnStraightNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+  }
+  document.getElementById('btnNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+
+  // 数字选择按钮
+  document.querySelectorAll('#countGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', selectCount === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  document.querySelectorAll('#valueGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', selectValue === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  document.querySelectorAll('#redCountGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', redGuess === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜红蓝红点选择
+  document.querySelectorAll('#redBlueRedGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', redBlueRed === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜红蓝蓝点选择
+  document.querySelectorAll('#redBlueBlueGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', redBlueBlue === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜大小小点数选择
+  document.querySelectorAll('#bigSmallSmallGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', bigSmallSmall === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜大小大点数选择
+  document.querySelectorAll('#bigSmallBigGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', bigSmallBig === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜单双单点数选择
+  document.querySelectorAll('#oddEvenOddGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', oddEvenOdd === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜单双双点数选择
+  document.querySelectorAll('#oddEvenEvenGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', oddEvenEven === val);
+    btn.disabled = !isPlayerTurn;
+  });
+  // 猜顺子长度选择
+  document.querySelectorAll('#straightLenGroup .num-btn').forEach(btn => {
+    const val = parseInt(btn.dataset.val);
+    btn.classList.toggle('active', straightLen === val);
+    // 不能叫小于等于当前叫点的长度
+    const minLen = currentBid ? currentBid.len + 1 : 2;
+    btn.disabled = !isPlayerTurn || val < minLen;
+  });
+
+  // 消息
+  const msgEl = document.getElementById('gameMsg');
+  if (gamePhase === 'idle') {
+    msgEl.textContent = '点击「开始新局」发骰子';
+  } else if (gamePhase === 'shaking') {
+    msgEl.textContent = '🎲 摇骰中...';
+  } else if (gamePhase === 'bidding') {
+    if (gameMode === 'straight') {
+      msgEl.textContent = currentTurn === 0 ? '选择顺子长度，然后叫点' : '电脑正在思考...';
+    } else if (gameMode === 'red') {
+      msgEl.textContent = currentTurn === 0 ? '选数字拼叫点，然后加码或开盅' : '电脑正在思考...';
+    } else {
+      msgEl.textContent = currentTurn === 0 ? '轮到你叫点或开盅' : '电脑正在思考...';
+    }
+  }
+
+  // 回合数
+  document.getElementById('roundBadge').textContent = `第 ${roundNum} 局`;
+}
+
+// ============ 玩家操作 ============
+document.getElementById('countGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  selectCount = parseInt(btn.dataset.val);
+  updateUI();
+});
+
+document.getElementById('valueGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  selectValue = parseInt(btn.dataset.val);
+  updateUI();
+});
+
+document.getElementById('btnBid').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0) return;
+  if (!canBid(selectCount, selectValue)) return;
+
+  currentBid = { count: selectCount, value: selectValue };
+  document.getElementById('gameMsg').textContent = `你叫了 ${selectCount} 个 ${selectValue === 1 ? '①(万能)' : selectValue}`;
+  currentTurn = 1;
+  updateUI();
+  if (mpGameActive) { mpSendBid(currentBid); }
+  else { setTimeout(() => computerTurn(), 1000); }
+});
+
+document.getElementById('btnChallenge').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  if (mpGameActive) { mpSendChallenge(); }
+  revealAndJudge(0); // 0=玩家开盅
+});
+
+document.getElementById('btnNew').addEventListener('click', () => {
+  if (gamePhase === 'shaking') return;
+  if (gamePhase === 'ended') {
+    roundNum++;
+  }
+  newRound();
+});
+
+// ============ 猜红点模式 (吹牛式) ============
+// 红点分值：①=1, ④=4, 其他=0
+function redValue(v) {
+  if (v === 1) return 1;
+  if (v === 4) return 4;
+  return 0;
+}
+function calcRedTotal(dice) {
+  return dice.reduce((sum, v) => sum + redValue(v), 0);
+}
+
+// 数字键点击（拼猜测）
+document.getElementById('redCountGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  if (btn.id === 'btnRedClear') {
+    redGuess = 0;
+    hasGuessed = false;
+    updateUI();
+    return;
+  }
+  const val = parseInt(btn.dataset.val);
+  if (isNaN(val)) return;
+  if (!hasGuessed) {
+    redGuess = val;
+    hasGuessed = true;
+  } else {
+    const newGuess = redGuess * 10 + val;
+    if (newGuess <= 40) redGuess = newGuess;
+  }
+  updateUI();
+});
+
+// 玩家加码
+document.getElementById('btnRedBid').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0) return;
+  if (!hasGuessed || redGuess <= 0) return;
+  if (currentBid && redGuess <= currentBid.total) return;
+  
+  currentBid = { total: redGuess };
+  document.getElementById('gameMsg').textContent = `你叫了 ${redGuess} 点`;
+  currentTurn = 1;
+  updateUI();
+  if (mpGameActive) { mpSendBid(currentBid); }
+  else { setTimeout(() => computerRedTurn(), 1000); }
+});
+
+// 玩家开盅
+document.getElementById('btnRedChallenge').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  if (mpGameActive) { mpSendChallenge(); }
+  revealRedJudge(0);
+});
+
+// 新局
+document.getElementById('btnRedNew').addEventListener('click', () => {
+  if (gamePhase === 'shaking') return;
+  if (gamePhase === 'ended') roundNum++;
+  newRound();
+});
+
+// 电脑叫红点
+function computerRedTurn() {
+  const myTotal = calcRedTotal(computerDice);
+  // 只基于自己的骰子做决策，不再偷看玩家骰子
+  const expectedOther = 4; // 对方期望约4点
+  
+  if (!currentBid) {
+    // 电脑先叫：基于自己的点数 + 合理推测
+    const baseCall = myTotal + expectedOther;
+    const noise = Math.floor(Math.random() * 3) - 1;
+    let call = baseCall + noise;
+    call = Math.max(1, Math.min(40, call));
+    
+    currentBid = { total: call };
+    document.getElementById('gameMsg').textContent = `电脑叫了 ${call} 点`;
+    currentTurn = 0;
+    updateUI();
+    return;
+  }
+  
+  // 评估上家叫点
+  const lastCall = currentBid.total;
+  const fairCall = myTotal + expectedOther;
+  
+  // 如果上家叫点远超公平值，较大概率开盅
+  if (lastCall > fairCall + 3) {
+    if (Math.random() < 0.75) {
+      revealRedJudge(1);
+      return;
+    }
+  }
+  
+  // 如果叫点接近或超过公平值，开盅
+  if (lastCall >= fairCall) {
+    if (Math.random() < 0.6) {
+      revealRedJudge(1);
+      return;
+    }
+  }
+  
+  // 偶尔吹牛加码
+  if (Math.random() < 0.2) {
+    const bluffCall = lastCall + 1 + Math.floor(Math.random() * 2);
+    currentBid = { total: Math.min(40, bluffCall) };
+    document.getElementById('gameMsg').textContent = `电脑叫了 ${Math.min(40, bluffCall)} 点`;
+    currentTurn = 0;
+    updateUI();
+    return;
+  }
+  
+  // 正常加码
+  let newCall = Math.max(lastCall + 1, fairCall);
+  newCall = Math.min(40, newCall);
+  
+  // 如果加码太高，直接开盅
+  if (newCall > fairCall + 4) {
+    revealRedJudge(1);
+    return;
+  }
+  
+  currentBid = { total: newCall };
+  document.getElementById('gameMsg').textContent = `电脑叫了 ${newCall} 点`;
+  currentTurn = 0;
+  updateUI();
+}
+
+// 开盅判定
+function revealRedJudge(challenger) {
+  gamePhase = 'revealing';
+  renderDice();
+  
+  const actualTotal = calcRedTotal([...playerDice, ...computerDice]);
+  const bidTotal = currentBid.total;
+  const isLiar = actualTotal < bidTotal; // 叫点超过实际 = 吹牛
+  
+  const playerRed = calcRedTotal(playerDice);
+  const computerRed = calcRedTotal(computerDice);
+  
+  let detail = `叫点：${bidTotal} 点\n`;
+  detail += `实际：${actualTotal} 点\n`;
+  detail += `你的红点：${playerRed} 点\n`;
+  detail += `电脑红点：${computerRed} 点\n`;
+  
+  let winner, title, emoji;
+  if (isLiar) {
+    detail += `\n吹牛被识破！`;
+    winner = challenger;
+  } else {
+    detail += `\n叫点成立！`;
+    winner = challenger === 0 ? 1 : 0;
+  }
+  
+  if (winner === 0) {
+    title = '🎉 你赢了！';
+    emoji = '🎉';
+    playerWins++;
+  } else {
+    title = '😅 电脑赢了';
+    emoji = '🤖';
+    computerWins++;
+  }
+  
+  document.getElementById('playerWins').textContent = playerWins;
+  document.getElementById('computerWins').textContent = computerWins;
+  document.getElementById('playerZone').classList.add(winner === 0 ? 'winner' : 'loser');
+  document.getElementById('computerZone').classList.add(winner === 1 ? 'winner' : 'loser');
+  
+  gamePhase = 'ended';
+  updateUI();
+  
+  setTimeout(() => {
+    document.getElementById('modalEmoji').textContent = emoji;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDetail').textContent = detail;
+    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 600);
+}
+
+// ============ 猜红蓝模式 ============
+
+document.getElementById('redBlueRedGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  redBlueRed = parseInt(btn.dataset.val);
+  // 同步红蓝总数选择
+  redGuess = redBlueRed + redBlueBlue;
+  hasGuessed = (redBlueRed + redBlueBlue) > 0;
+  updateUI();
+});
+
+document.getElementById('redBlueBlueGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  redBlueBlue = parseInt(btn.dataset.val);
+  // 同步红蓝总数选择
+  redGuess = redBlueRed + redBlueBlue;
+  hasGuessed = (redBlueRed + redBlueBlue) > 0;
+  updateUI();
+});
+
+// 猜红蓝叫点
+document.getElementById('btnRedBlueBid').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0) return;
+  
+  // 必须至少有一个大于0
+  if (redBlueRed === 0 && redBlueBlue === 0) return;
+  
+  // 检查是否满足叫点规则（总数量大于上家，或至少一项更大）
+  if (!canRedBlueBid(redBlueRed, redBlueBlue)) return;
+  
+  currentBid = { red: redBlueRed, blue: redBlueBlue };
+  document.getElementById('gameMsg').textContent = `你叫了 ${redBlueRed}红 ${redBlueBlue}蓝`;
+  currentTurn = 1;
+  updateUI();
+  if (mpGameActive) { mpSendBid(currentBid); }
+  else { setTimeout(() => computerRedBlueTurn(), 1000); }
+});
+
+// 猜红蓝开盅
+document.getElementById('btnRedBlueChallenge').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  if (mpGameActive) { mpSendChallenge(); }
+  revealRedBlueJudge(0);
+});
+
+document.getElementById('btnRedBlueNew').addEventListener('click', () => {
+  if (gamePhase === 'shaking') return;
+  if (gamePhase === 'ended') {
+    roundNum++;
+  }
+  newRound();
+});
+
+// ============ 猜大小模式 ============
+document.getElementById('bigSmallSmallGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  bigSmallSmall = parseInt(btn.dataset.val);
+  updateUI();
+});
+
+document.getElementById('bigSmallBigGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  bigSmallBig = parseInt(btn.dataset.val);
+  updateUI();
+});
+
+document.getElementById('btnBigSmallBid').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0) return;
+  if (bigSmallSmall === 0 && bigSmallBig === 0) return;
+  if (!canBigSmallBid(bigSmallSmall, bigSmallBig)) return;
+  
+  currentBid = { small: bigSmallSmall, big: bigSmallBig };
+  document.getElementById('gameMsg').textContent = `你叫了 ${bigSmallSmall}小 ${bigSmallBig}大`;
+  currentTurn = 1;
+  updateUI();
+  if (mpGameActive) { mpSendBid(currentBid); }
+  else { setTimeout(() => computerBigSmallTurn(), 1000); }
+});
+
+document.getElementById('btnBigSmallChallenge').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  if (mpGameActive) { mpSendChallenge(); }
+  revealBigSmallJudge(0);
+});
+
+document.getElementById('btnBigSmallNew').addEventListener('click', () => {
+  if (gamePhase === 'shaking') return;
+  if (gamePhase === 'ended') roundNum++;
+  newRound();
+});
+
+// 猜大小电脑AI
+function computerBigSmallTurn() {
+  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+  const result = aiBigSmallDecide();
+  updateUI();
+
+  setTimeout(() => {
+    if (result.action === 'bid') {
+      currentBid = { small: result.small, big: result.big };
+      document.getElementById('gameMsg').textContent = `电脑叫了 ${result.small}小 ${result.big}大`;
+      currentTurn = 0;
+      updateUI();
+    } else {
+      revealBigSmallJudge(1);
+    }
+  }, 800);
+}
+
+function aiBigSmallDecide() {
+  const myDice = computerDice;
+  const mySmall = myDice.filter(v => v >= 1 && v <= 3).length;
+  const myBig = myDice.filter(v => v >= 4 && v <= 6).length;
+
+  if (!currentBid) {
+    const bidSmall = mySmall + Math.floor(Math.random() * 2);
+    const bidBig = myBig + 2 + Math.floor(Math.random() * 2);
+    return { action: 'bid', small: Math.min(bidSmall, 10), big: Math.min(bidBig, 10) };
+  }
+
+  // 只基于自己的骰子做决策
+  const estTotalSmall = mySmall + 2; // 估计对手约2个小
+  const estTotalBig = myBig + 2;     // 估计对手约2个大
+
+  if (estTotalSmall < currentBid.small || estTotalBig < currentBid.big) {
+    if (Math.random() < 0.65) return { action: 'challenge' };
+  }
+
+  if (Math.random() < 0.25) {
+    const newSmall = currentBid.small + (Math.random() < 0.4 ? 1 : 0);
+    const newBig = currentBid.big + (Math.random() < 0.6 ? 1 : 0);
+    if (newSmall + newBig <= 10) return { action: 'bid', small: newSmall, big: newBig };
+  }
+
+  const estPlayerSmall = Math.floor(Math.random() * 2);
+  const estPlayerBig = 2 + Math.floor(Math.random() * 2);
+  let newSmall = mySmall + estPlayerSmall;
+  let newBig = myBig + estPlayerBig;
+
+  if (newSmall + newBig <= currentBid.small + currentBid.big) {
+    if (Math.random() < 0.5) {
+      newSmall = currentBid.small + 1;
+      newBig = currentBid.big;
+    } else {
+      newSmall = currentBid.small;
+      newBig = currentBid.big + 1;
+    }
+  }
+
+  if (newSmall <= currentBid.small && newBig <= currentBid.big) {
+    newSmall = currentBid.small + 1;
+  }
+
+  return { action: 'bid', small: Math.min(newSmall, 10), big: Math.min(newBig, 10) };
+}
+
+function revealBigSmallJudge(challenger) {
+  gamePhase = 'revealing';
+  renderDice();
+
+  const allDice = [...playerDice, ...computerDice];
+  const actualSmall = allDice.filter(v => v >= 1 && v <= 3).length;
+  const actualBig = allDice.filter(v => v >= 4 && v <= 6).length;
+  const isLiar = actualSmall < currentBid.small || actualBig < currentBid.big;
+
+  let detail = `叫点：${currentBid.small}小 ${currentBid.big}大\n`;
+  detail += `实际：${actualSmall}小 ${actualBig}大\n`;
+
+  let winner, title, emoji;
+  if (isLiar) {
+    detail += `\n吹牛被识破！`;
+    winner = challenger;
+  } else {
+    detail += `\n叫点成立！`;
+    winner = challenger === 0 ? 1 : 0;
+  }
+
+  if (winner === 0) {
+    title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
+  } else {
+    title = '😅 电脑赢了'; emoji = '🤖'; computerWins++;
+  }
+
+  document.getElementById('playerWins').textContent = playerWins;
+  document.getElementById('computerWins').textContent = computerWins;
+  document.getElementById('playerZone').classList.add(winner === 0 ? 'winner' : 'loser');
+  document.getElementById('computerZone').classList.add(winner === 1 ? 'winner' : 'loser');
+  gamePhase = 'ended';
+  updateUI();
+
+  setTimeout(() => {
+    document.getElementById('modalEmoji').textContent = emoji;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDetail').textContent = detail;
+    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 600);
+}
+
+// ============ 猜单双模式 ============
+document.getElementById('oddEvenOddGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  oddEvenOdd = parseInt(btn.dataset.val);
+  updateUI();
+});
+
+document.getElementById('oddEvenEvenGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.num-btn');
+  if (!btn || btn.disabled) return;
+  oddEvenEven = parseInt(btn.dataset.val);
+  updateUI();
+});
+
+document.getElementById('btnOddEvenBid').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0) return;
+  if (oddEvenOdd === 0 && oddEvenEven === 0) return;
+  if (!canOddEvenBid(oddEvenOdd, oddEvenEven)) return;
+  
+  currentBid = { odd: oddEvenOdd, even: oddEvenEven };
+  document.getElementById('gameMsg').textContent = `你叫了 ${oddEvenOdd}单 ${oddEvenEven}双`;
+  currentTurn = 1;
+  updateUI();
+  if (mpGameActive) { mpSendBid(currentBid); }
+  else { setTimeout(() => computerOddEvenTurn(), 1000); }
+});
+
+document.getElementById('btnOddEvenChallenge').addEventListener('click', () => {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  if (mpGameActive) { mpSendChallenge(); }
+  revealOddEvenJudge(0);
+});
+
+document.getElementById('btnOddEvenNew').addEventListener('click', () => {
+  if (gamePhase === 'shaking') return;
+  if (gamePhase === 'ended') roundNum++;
+  newRound();
+});
+
+// 猜单双电脑AI
+function computerOddEvenTurn() {
+  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+  const result = aiOddEvenDecide();
+  updateUI();
+
+  setTimeout(() => {
+    if (result.action === 'bid') {
+      currentBid = { odd: result.odd, even: result.even };
+      document.getElementById('gameMsg').textContent = `电脑叫了 ${result.odd}单 ${result.even}双`;
+      currentTurn = 0;
+      updateUI();
+    } else {
+      revealOddEvenJudge(1);
+    }
+  }, 800);
+}
+
+function aiOddEvenDecide() {
+  const myDice = computerDice;
+  const myOdd = myDice.filter(v => v === 1 || v === 3 || v === 5).length;
+  const myEven = myDice.filter(v => v === 2 || v === 4 || v === 6).length;
+
+  if (!currentBid) {
+    const bidOdd = myOdd + Math.floor(Math.random() * 2);
+    const bidEven = myEven + 2 + Math.floor(Math.random() * 2);
+    return { action: 'bid', odd: Math.min(bidOdd, 10), even: Math.min(bidEven, 10) };
+  }
+
+  // 只基于自己的骰子做决策
+  const estTotalOdd = myOdd + 2;  // 估计对手约2个单
+  const estTotalEven = myEven + 2; // 估计对手约2个双
+
+  if (estTotalOdd < currentBid.odd || estTotalEven < currentBid.even) {
+    if (Math.random() < 0.65) return { action: 'challenge' };
+  }
+
+  if (Math.random() < 0.25) {
+    const newOdd = currentBid.odd + (Math.random() < 0.4 ? 1 : 0);
+    const newEven = currentBid.even + (Math.random() < 0.6 ? 1 : 0);
+    if (newOdd + newEven <= 10) return { action: 'bid', odd: newOdd, even: newEven };
+  }
+
+  const estPlayerOdd = Math.floor(Math.random() * 2);
+  const estPlayerEven = 2 + Math.floor(Math.random() * 2);
+  let newOdd = myOdd + estPlayerOdd;
+  let newEven = myEven + estPlayerEven;
+
+  if (newOdd + newEven <= currentBid.odd + currentBid.even) {
+    if (Math.random() < 0.5) {
+      newOdd = currentBid.odd + 1;
+      newEven = currentBid.even;
+    } else {
+      newOdd = currentBid.odd;
+      newEven = currentBid.even + 1;
+    }
+  }
+
+  if (newOdd <= currentBid.odd && newEven <= currentBid.even) {
+    newOdd = currentBid.odd + 1;
+  }
+
+  return { action: 'bid', odd: Math.min(newOdd, 10), even: Math.min(newEven, 10) };
+}
+
+function revealOddEvenJudge(challenger) {
+  gamePhase = 'revealing';
+  renderDice();
+
+  const allDice = [...playerDice, ...computerDice];
+  const actualOdd = allDice.filter(v => v === 1 || v === 3 || v === 5).length;
+  const actualEven = allDice.filter(v => v === 2 || v === 4 || v === 6).length;
+  const isLiar = actualOdd < currentBid.odd || actualEven < currentBid.even;
+
+  let detail = `叫点：${currentBid.odd}单 ${currentBid.even}双\n`;
+  detail += `实际：${actualOdd}单 ${actualEven}双\n`;
+
+  let winner, title, emoji;
+  if (isLiar) {
+    detail += `\n吹牛被识破！`;
+    winner = challenger;
+  } else {
+    detail += `\n叫点成立！`;
+    winner = challenger === 0 ? 1 : 0;
+  }
+
+  if (winner === 0) {
+    title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
+  } else {
+    title = '😅 电脑赢了'; emoji = '🤖'; computerWins++;
+  }
+
+  document.getElementById('playerWins').textContent = playerWins;
+  document.getElementById('computerWins').textContent = computerWins;
+  document.getElementById('playerZone').classList.add(winner === 0 ? 'winner' : 'loser');
+  document.getElementById('computerZone').classList.add(winner === 1 ? 'winner' : 'loser');
+  gamePhase = 'ended';
+  updateUI();
+
+  setTimeout(() => {
+    document.getElementById('modalEmoji').textContent = emoji;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDetail').textContent = detail;
+    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 600);
+}
+
+// 判断猜红蓝叫点是否合法
+function canRedBlueBid(red, blue) {
+  if (!currentBid) return true;
+  const total = red + blue;
+  const lastTotal = currentBid.red + currentBid.blue;
+  if (total > lastTotal) return true;
+  if (total === lastTotal && (red > currentBid.red || blue > currentBid.blue)) return true;
+  return false;
+}
+
+// 判断猜大小叫点是否合法
+function canBigSmallBid(small, big) {
+  if (!currentBid) return true;
+  const total = small + big;
+  const lastTotal = currentBid.small + currentBid.big;
+  if (total > lastTotal) return true;
+  if (total === lastTotal && (small > currentBid.small || big > currentBid.big)) return true;
+  return false;
+}
+
+// 判断猜单双叫点是否合法
+function canOddEvenBid(odd, even) {
+  if (!currentBid) return true;
+  const total = odd + even;
+  const lastTotal = currentBid.odd + currentBid.even;
+  if (total > lastTotal) return true;
+  if (total === lastTotal && (odd > currentBid.odd || even > currentBid.even)) return true;
+  return false;
+}
+
+// ============ 猜顺子模式 ============
+
+// 判断顺子是否成立 (1=万能)
+function checkStraight(start, len) {
+  const allDice = [...playerDice, ...computerDice];
+  const wildCount = allDice.filter(v => v === 1).length;
+  const normalDice = allDice.filter(v => v !== 1);
+  
+  let usedWild = 0;
+  for (let need = start; need < start + len; need++) {
+    if (need > 6) {
+      usedWild++;
+    } else {
+      const idx = normalDice.indexOf(need);
+      if (idx !== -1) {
+        normalDice.splice(idx, 1);
+      } else {
+        usedWild++;
+      }
+    }
+  }
+  
+  return usedWild <= wildCount;
+}
+
+// 获取玩家顺子详细信息 (start固定为1)
+function getStraightInfo(start, len) {
+  const playerWildCount = playerDice.filter(v => v === 1).length;
+  const playerNormalDice = playerDice.filter(v => v !== 1);
+  
+  const have = [];
+  const missing = [];
+  let usedWild = 0;
+  
+  for (let need = 1; need <= len; need++) {
+    if (need > 6) {
+      missing.push(need);
+      usedWild++;
+    } else {
+      const idx = playerNormalDice.indexOf(need);
+      if (idx !== -1) {
+        have.push(need);
+        playerNormalDice.splice(idx, 1);
+      } else {
+        missing.push(need);
+        usedWild++;
+      }
+    }
+  }
+  
+  return { have, missing, usedWild, wildCount: playerWildCount };
+}
+
+// 电脑猜顺子AI
+function computerStraightTurn() {
+  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+  
+  const result = aiStraightDecide();
+  updateUI();
+  
+  setTimeout(() => {
+    if (result.action === 'bid') {
+      currentBid = { start: 1, len: result.len };
+      const seq = Array.from({length: result.len}, (_, i) => i + 1).join('');
+      document.getElementById('gameMsg').textContent = `电脑叫了 ${seq}`;
+      currentTurn = 0;
+      updateUI();
+    } else {
+      revealStraightJudge(1);
+    }
+  }, 800);
+}
+
+function aiStraightDecide() {
+  const myDice = computerDice;
+  const myWild = myDice.filter(v => v === 1).length;
+  const myNormal = myDice.filter(v => v !== 1);
+  
+  if (!currentBid) {
+    // 没叫过点，评估自己能组多长的顺子
+    const maxLen = evaluateMaxStraight(myNormal, myWild);
+    if (maxLen >= 2) {
+      return { action: 'bid', len: Math.min(maxLen, 4) };
+    }
+    return { action: 'bid', len: 2 };
+  }
+  
+  const lastLen = currentBid.len;
+  
+  // 只基于自己的骰子评估能否组成顺子
+  const myValid = canFormStraight([...myNormal], myWild, 1, lastLen);
+  
+  if (myValid) {
+    // 自己能组成，尝试加码
+    const newLen = lastLen + 1;
+    if (canFormStraight([...myNormal], myWild, 1, newLen)) {
+      return { action: 'bid', len: newLen };
+    }
+    // 无法加码但成立，开盅
+    if (Math.random() < 0.6) return { action: 'challenge' };
+    // 偶尔冒险加码
+    return { action: 'bid', len: newLen };
+  } else {
+    // 自己无法组成，但可能有万能1补充，开盅
+    return { action: 'challenge' };
+  }
+}
+
+function evaluateMaxStraight(normalDice, wildCount) {
+  for (let len = 10; len >= 2; len--) {
+    if (canFormStraight(normalDice, wildCount, 1, len)) {
+      return len;
+    }
+  }
+  return 2;
+}
+
+function canFormStraight(normalDice, wildCount, start, len) {
+  let wildNeeded = 0;
+  for (let need = start; need < start + len; need++) {
+    if (need > 6) {
+      wildNeeded++;
+    } else if (!normalDice.includes(need)) {
+      wildNeeded++;
+    }
+  }
+  return wildNeeded <= wildCount;
+}
+
+function revealStraightJudge(challenger) {
+  gamePhase = 'revealing';
+  renderDice();
+  
+  const len = currentBid.len;
+  const isValid = checkStraight(1, len);
+  const info = getStraightInfo(1, len);
+  
+  let detail = `叫点：长度${len} (1-${len})\n`;
+  detail += `已有的骰子：${info.have.join(', ') || '无'}\n`;
+  detail += `缺失的数字：${info.missing.join(', ') || '无'}\n`;
+  detail += `万能1使用：${info.usedWild}个 (共${info.wildCount}个)\n`;
+  detail += `结果：${isValid ? '顺子成立！' : '顺子不成立！'}`;
+  
+  let winner, title, emoji;
+  if (isValid) {
+    // 成立，开盅的人输
+    winner = challenger === 0 ? 1 : 0;
+    detail += '\n叫点成立！';
+  } else {
+    // 不成立，吹牛者输
+    winner = challenger;
+    detail += '\n吹牛被识破！';
+  }
+  
+  if (winner === 0) {
+    title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
+  } else {
+    title = '😅 电脑赢了'; emoji = '🤖'; computerWins++;
+  }
+  
+  document.getElementById('playerWins').textContent = playerWins;
+  document.getElementById('computerWins').textContent = computerWins;
+  document.getElementById('playerZone').classList.add(winner === 0 ? 'winner' : 'loser');
+  document.getElementById('computerZone').classList.add(winner === 1 ? 'winner' : 'loser');
+  gamePhase = 'ended';
+  updateUI();
+  
+  setTimeout(() => {
+    document.getElementById('modalEmoji').textContent = emoji;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDetail').textContent = detail;
+    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 600);
+}
+
+// 判断猜顺子叫点是否合法 (必须严格递增)
+function canStraightBid(len) {
+  if (!currentBid) return true;
+  return len > currentBid.len;
+}
+
+// 电脑猜红蓝AI
+function computerRedBlueTurn() {
+  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+
+  const result = aiRedBlueDecide();
+  updateUI();
+
+  setTimeout(() => {
+    if (result.action === 'bid') {
+      currentBid = { red: result.red, blue: result.blue };
+      document.getElementById('gameMsg').textContent = `电脑叫了 ${result.red}红 ${result.blue}蓝`;
+      currentTurn = 0;
+      updateUI();
+    } else {
+      // 开盅
+      revealRedBlueJudge(1);
+    }
+  }, 800);
+}
+
+function aiRedBlueDecide() {
+  const myDice = computerDice;
+  const myRed = myDice.filter(v => isRed(v)).length;
+  const myBlue = myDice.filter(v => !isRed(v)).length;
+
+  if (!currentBid) {
+    // 先叫：根据自己手牌叫
+    const bidRed = myRed + Math.floor(Math.random() * 2);
+    const bidBlue = myBlue + 2 + Math.floor(Math.random() * 2);
+    return { action: 'bid', red: Math.min(bidRed, 10), blue: Math.min(bidBlue, 10) };
+  }
+
+  // 只基于自己的骰子做决策
+  const estTotalRed = myRed + 2;  // 估计对手约2个红
+  const estTotalBlue = myBlue + 2; // 估计对手约2个蓝
+  
+  // 如果叫点已经超过估计值，开盅
+  if (estTotalRed < currentBid.red || estTotalBlue < currentBid.blue) {
+    if (Math.random() < 0.65) {
+      return { action: 'challenge' };
+    }
+  }
+
+  // 有一定概率吹牛加码
+  if (Math.random() < 0.25) {
+    const newRed = currentBid.red + (Math.random() < 0.4 ? 1 : 0);
+    const newBlue = currentBid.blue + (Math.random() < 0.6 ? 1 : 0);
+    if (newRed + newBlue <= 10) {
+      return { action: 'bid', red: newRed, blue: newBlue };
+    }
+  }
+
+  // 正常加码：根据自己手牌往上加
+  const estPlayerRed = Math.floor(Math.random() * 2);
+  const estPlayerBlue = 2 + Math.floor(Math.random() * 2);
+  
+  let newRed = myRed + estPlayerRed;
+  let newBlue = myBlue + estPlayerBlue;
+  
+  if (newRed + newBlue <= currentBid.red + currentBid.blue) {
+    if (Math.random() < 0.5) {
+      newRed = currentBid.red + 1;
+      newBlue = currentBid.blue;
+    } else {
+      newRed = currentBid.red;
+      newBlue = currentBid.blue + 1;
+    }
+  }
+  
+  if (newRed <= currentBid.red && newBlue <= currentBid.blue) {
+    newRed = currentBid.red + 1;
+  }
+
+  return { action: 'bid', red: Math.min(newRed, 10), blue: Math.min(newBlue, 10) };
+}
+
+function revealRedBlueJudge(challenger) {
+  gamePhase = 'revealing';
+  renderDice();
+  
+  const allDice = [...playerDice, ...computerDice];
+  const actualRed = allDice.filter(v => isRed(v)).length;
+  const actualBlue = allDice.filter(v => !isRed(v)).length;
+  
+  // 判断上家是否吹牛（叫的红不够 或 蓝不够）
+  const isLiar = actualRed < currentBid.red || actualBlue < currentBid.blue;
+  
+  const playerRed = playerDice.filter(v => isRed(v)).length;
+  const playerBlue = playerDice.filter(v => !isRed(v)).length;
+  const computerRed = computerDice.filter(v => isRed(v)).length;
+  const computerBlue = computerDice.filter(v => !isRed(v)).length;
+  
+  let detail = `叫点：${currentBid.red}红 ${currentBid.blue}蓝\n`;
+  detail += `实际：${actualRed}红 ${actualBlue}蓝（①和④为红点）\n`;
+  detail += `你的骰子：红${playerRed} 蓝${playerBlue}\n`;
+  detail += `电脑骰子：红${computerRed} 蓝${computerBlue}\n`;
+  
+  let winner, title, emoji;
+
+  if (isLiar) {
+    detail += `\n吹牛被识破！`;
+    winner = challenger; // 开盅的人赢
+  } else {
+    detail += `\n叫点成立！`;
+    winner = challenger === 0 ? 1 : 0; // 叫点的人赢
+  }
+
+  if (winner === 0) {
+    title = '🎉 你赢了！';
+    emoji = '🎉';
+    playerWins++;
+  } else {
+    title = '😅 电脑赢了';
+    emoji = '🤖';
+    computerWins++;
+  }
+  
+  document.getElementById('playerWins').textContent = playerWins;
+  document.getElementById('computerWins').textContent = computerWins;
+  
+  document.getElementById('playerZone').classList.add(winner === 0 ? 'winner' : 'loser');
+  document.getElementById('computerZone').classList.add(winner === 1 ? 'winner' : 'loser');
+  
+  gamePhase = 'ended';
+  updateUI();
+  
+  setTimeout(() => {
+    document.getElementById('modalEmoji').textContent = emoji;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDetail').textContent = detail;
+    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 600);
+}
+
+
+// ============ 电脑AI ============
+function computerTurn() {
+  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+
+  // AI策略
+  const result = aiDecide();
+  updateUI();
+
+  setTimeout(() => {
+    if (result.action === 'bid') {
+      currentBid = { count: result.count, value: result.value };
+      document.getElementById('gameMsg').textContent = `电脑叫了 ${result.count} 个 ${result.value === 1 ? '①(万能)' : result.value}`;
+      currentTurn = 0;
+      updateUI();
+    } else {
+      // 开盅
+      revealAndJudge(1); // 1=电脑开盅
+    }
+  }, 800);
+}
+
+function aiDecide() {
+  const myDice = computerDice;
+
+  // 我的骰子点数统计（不含万能）
+  const myCount = {};
+  for (let v = 1; v <= 6; v++) {
+    myCount[v] = myDice.filter(d => d === v).length;
+  }
+
+  // 如果没有叫点，先叫
+  if (!currentBid) {
+    let bestVal = 2, bestCount = 0;
+    for (let v = 2; v <= 6; v++) {
+      const c = myCount[v] + myCount[1];
+      if (c > bestCount) { bestCount = c; bestVal = v; }
+    }
+    if (bestCount === 0) bestVal = 2;
+    // 加上对对手的估计（每个点数期望约1.67个）
+    return { action: 'bid', count: Math.max(1, bestCount + 2), value: bestVal };
+  }
+
+  // 评估：自己有的 + 对手期望
+  const myValueCount = myCount[currentBid.value] + myCount[1];
+  const expectedTotal = myValueCount + 2; // 对手期望约2个
+
+  // 如果期望值远低于叫点，很可能吹牛
+  if (expectedTotal < currentBid.count) {
+    if (Math.random() < 0.7) {
+      return { action: 'challenge' };
+    }
+  }
+
+  // 有一定概率吹牛加码
+  const bluffChance = Math.random();
+  if (bluffChance < 0.25) {
+    const newCount = currentBid.count + 1;
+    const newValue = currentBid.value;
+    if (newCount <= 10) {
+      return { action: 'bid', count: newCount, value: newValue };
+    }
+  }
+
+  // 正常加码
+  let bestBid = null;
+  for (let v = 2; v <= 6; v++) {
+    const myTotal = myCount[v] + myCount[1];
+    if (myTotal > currentBid.count && (!bestBid || myTotal > bestBid.count)) {
+      bestBid = { count: myTotal, value: v };
+    }
+  }
+
+  // 如果自己没有更好的，尝试加大数量
+  if (!bestBid) {
+    const newCount = currentBid.count + (Math.random() < 0.3 ? 2 : 1);
+    if (newCount <= 10) {
+      return { action: 'bid', count: newCount, value: currentBid.value };
+    }
+    return { action: 'challenge' };
+  }
+
+  if (Math.random() < 0.15) {
+    return { action: 'challenge' };
+  }
+
+  return { action: 'bid', count: bestBid.count, value: bestBid.value };
+}
+
+// ============ 开盅结算 ============
+function revealAndJudge(challenger) {
+  gamePhase = 'revealing';
+  renderDice();
+
+  // 计算实际数量
+  const actualCount = countAllDice(currentBid.value);
+  const bidCount = currentBid.count;
+  const isLiar = actualCount < bidCount; // 吹牛者（上家）确实在吹牛
+
+  // 显示所有骰子
+  const allDice = [...playerDice, ...computerDice];
+  let detail = `叫点：${bidCount} 个 ${currentBid.value === 1 ? '①' : currentBid.value}\n`;
+  detail += `实际：${actualCount} 个（含万能1点）\n`;
+  detail += `你的骰子：${playerDice.join(' ')}\n`;
+  detail += `电脑骰子：${computerDice.join(' ')}\n`;
+
+  let winner, title, emoji;
+
+  if (isLiar) {
+    detail += `\n吹牛被识破！`;
+    winner = challenger; // 开盅的人赢
+  } else {
+    detail += `\n叫点成立！`;
+    winner = challenger === 0 ? 1 : 0; // 叫点的人赢
+  }
+
+  if (winner === 0) {
+    title = '🎉 你赢了！';
+    emoji = '🎉';
+    playerWins++;
+  } else {
+    title = '😅 电脑赢了';
+    emoji = '🤖';
+    computerWins++;
+  }
+
+  document.getElementById('playerWins').textContent = playerWins;
+  document.getElementById('computerWins').textContent = computerWins;
+
+  document.getElementById('playerZone').classList.add(winner === 0 ? 'winner' : 'loser');
+  document.getElementById('computerZone').classList.add(winner === 1 ? 'winner' : 'loser');
+
+  gamePhase = 'ended';
+  updateUI();
+
+  // 显示弹窗
+  setTimeout(() => {
+    document.getElementById('modalEmoji').textContent = emoji;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDetail').textContent = detail;
+    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 600);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('modalDice').innerHTML = '';
+  document.getElementById('playerZone').classList.remove('winner', 'loser');
+  document.getElementById('computerZone').classList.remove('winner', 'loser');
+  gamePhase = 'idle';
+  roundNum++;
+  
+  // 重置红点模式显示
+  if (gameMode === 'red') {
+    redGuess = 0;
+    hasGuessed = false;
+    const bidDisplay = document.getElementById('redBidDisplay');
+    if (bidDisplay) bidDisplay.textContent = '等待叫点...';
+    const hint = document.getElementById('redConfirmHint');
+    if (hint) hint.classList.remove('show');
+  }
+  if (gameMode === 'redblue') {
+    document.getElementById('bidValue').textContent = '猜红蓝 (X红Y蓝)';
+  } else if (gameMode === 'bigsmall') {
+    document.getElementById('bidValue').textContent = '猜大小 (X小Y大)';
+  } else if (gameMode === 'oddeven') {
+    document.getElementById('bidValue').textContent = '猜单双 (X单Y双)';
+  } else if (gameMode === 'straight') {
+    document.getElementById('bidValue').textContent = '猜顺子 (从1开始, 叫长度)';
+  }
+  
+  updateUI();
+}
+
+// ============ 规则弹窗 ============
+const RULES_DATA = {
+  liar: {
+    icon: '🎯',
+    title: '吹牛',
+    rules: [
+      { emoji: '🎲', text: '双方各掷5颗骰子，1点为万能' },
+      { emoji: '📢', text: '轮到你叫点，格式："几个几点"（如"3个5"）' },
+      { emoji: '⬆️', text: '叫点必须大于上家（总数更大，或同数量换更大点数）' },
+      { emoji: '1️⃣', text: '①=万能，可充当任何点数' },
+      { emoji: '🔍', text: '不信可以开盅，双方亮骰验证' },
+      { emoji: '✅', text: '实际数量≥叫点则叫点方赢，否则开盅方赢' },
+    ]
+  },
+  red: {
+    icon: '🔴',
+    title: '猜红点',
+    rules: [
+      { emoji: '🎲', text: '双方各掷5颗骰子' },
+      { emoji: '🔴', text: '①=1分 ④=4分 其他=0分，最高40分' },
+      { emoji: '📢', text: '轮流向对方叫点（如\"15点\"）' },
+      { emoji: '⬆️', text: '叫点须大于上家' },
+      { emoji: '🔍', text: '不信可以开盅，验证双方总分' },
+      { emoji: '✅', text: '实际≥叫点则叫点方赢，否则开盅方赢' },
+    ]
+  },
+  redblue: {
+    icon: '🔵',
+    title: '猜红蓝',
+    rules: [
+      { emoji: '🎲', text: '双方各掷5颗骰子，①和④=红点 ②③⑤⑥=蓝点' },
+      { emoji: '📢', text: '轮流向对方叫"X红Y蓝"（如"3红5蓝"）' },
+      { emoji: '⬆️', text: '叫点须至少一项大于上家' },
+      { emoji: '🔍', text: '不信可以开盅，验证红蓝是否够数' },
+      { emoji: '✅', text: '实际红/蓝≥叫点则叫点方赢，否则开盅方赢' },
+    ]
+  },
+  bigsmall: {
+    icon: '⚖️',
+    title: '猜大小',
+    rules: [
+      { emoji: '🎲', text: '双方各掷5颗骰子' },
+      { emoji: '⬇️', text: '①②③为小，④⑤⑥为大' },
+      { emoji: '📢', text: '轮流向对方叫"X小Y大"（如"3小5大"）' },
+      { emoji: '⬆️', text: '叫点须至少一项大于上家' },
+      { emoji: '🔍', text: '不信可以开盅，验证大小是否够数' },
+      { emoji: '✅', text: '实际小/大≥叫点则叫点方赢，否则开盅方赢' },
+    ]
+  },
+  oddeven: {
+    icon: '⚡',
+    title: '猜单双',
+    rules: [
+      { emoji: '🎲', text: '双方各掷5颗骰子' },
+      { emoji: '1️⃣', text: '①③⑤=单，②④⑥=双' },
+      { emoji: '📢', text: '轮流向对方叫"X单Y双"（如"3单5双"）' },
+      { emoji: '⬆️', text: '叫点须至少一项大于上家' },
+      { emoji: '🔍', text: '不信可以开盅，验证单双是否够数' },
+      { emoji: '✅', text: '实际单/双≥叫点则叫点方赢，否则开盅方赢' },
+    ]
+  },
+  straight: {
+    icon: '🔢',
+    title: '猜顺子',
+    rules: [
+      { emoji: '🎲', text: '双方各掷5颗骰子' },
+      { emoji: '🔢', text: '目标是组成从1开始的连续数字（1234567...）' },
+      { emoji: '1️⃣', text: '①=万能，可补任何缺失的数字' },
+      { emoji: '📢', text: '叫长度，如叫"123"（长度3），下家须叫更大（长度4+）' },
+      { emoji: '🔍', text: '开盅验证双方骰子能否组成该顺子' },
+      { emoji: '💡', text: '例：双方骰子能组成1234则叫"12345"（长度5）失败' },
+    ]
+  }
+};
+
+function showRules(mode) {
+  const data = RULES_DATA[mode];
+  if (!data) return;
+  
+  document.getElementById('rulesIcon').textContent = data.icon;
+  document.getElementById('rulesTitle').textContent = data.title + ' 规则';
+  
+  let html = '';
+  data.rules.forEach(rule => {
+    html += `<div class="rule-item"><span class="rule-emoji">${rule.emoji}</span><span class="rule-text">${rule.text}</span></div>`;
+  });
+  document.getElementById('rulesBody').innerHTML = html;
+  document.getElementById('rulesOverlay').classList.add('show');
+}
+
+function closeRules() {
+  document.getElementById('rulesOverlay').classList.remove('show');
+}
+
+// ============ 背景粒子 ============
+function createParticles() {
+  for (let i = 0; i < 25; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (Math.random() * 8 + 5) + 's';
+    p.style.animationDelay = (Math.random() * 5) + 's';
+    p.style.width = p.style.height = (Math.random() * 3 + 2) + 'px';
+    document.body.appendChild(p);
+  }
+}
+
+// ============ 作弊按钮 ============
+document.getElementById('cheatBtn').addEventListener('click', () => {
+  if (gamePhase === 'shaking' || gamePhase === 'idle') return;
+  if (cheatUsedThisRound) return; // 每局只能用一次
+  
+  cheatMode = !cheatMode;
+  const btn = document.getElementById('cheatBtn');
+  const hint = document.getElementById('cheatHint');
+  
+  if (cheatMode) {
+    btn.classList.add('active');
+    hint.classList.add('show');
+    cheatUsedThisRound = true;
+    renderDice(); // 重新渲染，显示电脑2颗骰子
+  } else {
+    btn.classList.remove('active');
+    hint.classList.remove('show');
+    renderDice(); // 重新渲染，隐藏电脑骰子
+  }
+});
+
+// ============ 封面页 ============
+document.getElementById('coverStartBtn').addEventListener('click', () => {
+  const cover = document.getElementById('coverPage');
+  cover.classList.add('hidden');
+  setTimeout(() => {
+    cover.style.display = 'none';
+  }, 500);
+});
+
+// ============ 联机模式 ============
+let peer = null;
+let conn = null;
+let mpRoomCode = '';
+let mpIsHost = false;
+let mpConnected = false;
+let mpMyDice = [];
+let mpOpponentDice = [];
+let mpMyTurn = false;
+let mpGameActive = false;
+
+// 生成随机房间号
+function generateRoomCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
+// 创建房间
+function mpCreateRoom() {
+  mpRoomCode = generateRoomCode();
+  mpIsHost = true;
+  mpConnected = false;
+  
+  document.getElementById('mpRoomCode').textContent = mpRoomCode;
+  document.getElementById('mpRoomStatus').textContent = '正在创建房间...';
+  document.getElementById('mpQrCode').innerHTML = '';
+  
+  // 生成二维码
+  const joinUrl = `${window.location.origin}${window.location.pathname}?room=${mpRoomCode}`;
+  if (typeof QRCode !== 'undefined') {
+    new QRCode(document.getElementById('mpQrCode'), {
+      text: joinUrl,
+      width: 140,
+      height: 140,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } else {
+    document.getElementById('mpQrCode').innerHTML = 
+      `<div style="color:#fff;font-size:0.8rem;text-align:center;padding:20px 0;">二维码加载失败<br>房间号：<b style="font-size:1.2rem;color:#a78bfa;">${mpRoomCode}</b></div>`;
+  }
+  
+  // 初始化 PeerJS
+  if (peer) peer.destroy();
+  peer = new Peer(mpRoomCode, {
+    debug: 1,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    }
+  });
+
+  // 超时检测：15秒未创建成功则提示
+  const createTimeout = setTimeout(() => {
+    if (!mpConnected) {
+      document.getElementById('mpRoomStatus').textContent = '创建超时，请检查网络后重试';
+    }
+  }, 15000);
+  
+  peer.on('open', (id) => {
+    clearTimeout(createTimeout);
+    document.getElementById('mpRoomStatus').textContent = '房间已创建，等待好友加入';
+  });
+  
+  peer.on('connection', (c) => {
+    conn = c;
+    conn.on('open', () => {
+      clearTimeout(createTimeout);
+      mpConnected = true;
+      document.getElementById('mpRoomStatus').textContent = '好友已加入！';
+      setTimeout(() => {
+        document.getElementById('mpCreateOverlay').classList.remove('show');
+        mpStartGame();
+      }, 1500);
+    });
+    conn.on('data', (data) => mpHandleData(data));
+    conn.on('close', () => mpHandleDisconnect());
+  });
+  
+  peer.on('error', (err) => {
+    clearTimeout(createTimeout);
+    console.error('PeerJS error:', err);
+    if (err.type === 'server-error') {
+      document.getElementById('mpRoomStatus').textContent = '无法连接服务器，请检查网络';
+    } else if (err.type === 'unavailable-id') {
+      document.getElementById('mpRoomStatus').textContent = '房间号已被使用，请刷新重试';
+    } else if (err.type === 'network') {
+      document.getElementById('mpRoomStatus').textContent = '网络错误，请检查网络连接';
+    } else {
+      document.getElementById('mpRoomStatus').textContent = '创建失败：' + (err.type || '未知错误');
+    }
+  });
+}
+
+// 加入房间
+function mpJoinRoom(code) {
+  if (!code || code.length < 4) {
+    document.getElementById('mpJoinStatus').textContent = '请输入有效的房间号';
+    document.getElementById('mpJoinStatus').className = 'mp-join-status error';
+    return;
+  }
+  
+  code = code.toUpperCase();
+  mpIsHost = false;
+  mpConnected = false;
+  
+  document.getElementById('mpJoinStatus').textContent = '正在连接服务器...';
+  document.getElementById('mpJoinStatus').className = 'mp-join-status';
+  
+  if (peer) peer.destroy();
+  peer = new Peer({
+    debug: 2,
+    config: {
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' }
+      ]
+    }
+  });
+  
+  // 超时检测：15秒未连接则提示
+  const joinTimeout = setTimeout(() => {
+    if (!mpConnected) {
+      document.getElementById('mpJoinStatus').textContent = '连接超时，请确认房间号正确且房主已上线。如在中国大陆，可能是网络问题。';
+      document.getElementById('mpJoinStatus').className = 'mp-join-status error';
+    }
+  }, 15000);
+  
+  peer.on('open', (id) => {
+    document.getElementById('mpJoinStatus').textContent = '服务器已连接，正在加入房间...';
+    conn = peer.connect(code, { reliable: true });
+    
+    conn.on('open', () => {
+      clearTimeout(joinTimeout);
+      mpConnected = true;
+      document.getElementById('mpJoinStatus').textContent = '加入成功！';
+      document.getElementById('mpJoinStatus').className = 'mp-join-status success';
+      document.getElementById('mpOpponentName').textContent = '房主';
+      setTimeout(() => {
+        document.getElementById('mpJoinOverlay').classList.remove('show');
+        mpStartGame();
+      }, 1000);
+    });
+    
+    conn.on('data', (data) => mpHandleData(data));
+    conn.on('close', () => mpHandleDisconnect());
+    
+    // 连接失败
+    conn.on('error', () => {
+      clearTimeout(joinTimeout);
+      document.getElementById('mpJoinStatus').textContent = '加入失败，房间可能不存在，请确认房主已创建房间';
+      document.getElementById('mpJoinStatus').className = 'mp-join-status error';
+    });
+  });
+  
+  peer.on('error', (err) => {
+    clearTimeout(joinTimeout);
+    console.error('PeerJS error:', err);
+    if (err.type === 'server-error') {
+      document.getElementById('mpJoinStatus').textContent = '无法连接服务器，请检查网络';
+    } else if (err.type === 'peer-unavailable') {
+      document.getElementById('mpJoinStatus').textContent = '房间不存在，请确认房间号正确';
+    } else if (err.type === 'network') {
+      document.getElementById('mpJoinStatus').textContent = '网络错误，请检查网络连接';
+    } else {
+      document.getElementById('mpJoinStatus').textContent = '连接失败：' + (err.type || '未知错误');
+    }
+    document.getElementById('mpJoinStatus').className = 'mp-join-status error';
+  });
+}
+
+// 处理接收到的数据
+function mpHandleData(data) {
+  switch (data.type) {
+    case 'dice':
+      mpOpponentDice = data.dice;
+      computerDice = [...data.dice];
+      renderDice();
+      // 如果正在等待对手骰子，收到后开始叫点
+      if (gamePhase === 'waiting') {
+        startBidding();
+      }
+      break;
+    case 'bid':
+      // 对手叫点
+      currentBid = data.bid;
+      currentTurn = 0;
+      updateUI();
+      break;
+    case 'challenge':
+      // 对手开盅
+      if (gameMode === 'liar') revealAndJudge(1);
+      else if (gameMode === 'red') revealRedJudge(1);
+      else if (gameMode === 'redblue') revealRedBlueJudge(1);
+      else if (gameMode === 'bigsmall') revealBigSmallJudge(1);
+      else if (gameMode === 'oddeven') revealOddEvenJudge(1);
+      else if (gameMode === 'straight') revealStraightJudge(1);
+      break;
+    case 'new_round':
+      newRound();
+      break;
+    case 'select_mode':
+      switchMode(data.mode);
+      break;
+    case 'chat':
+      // 可扩展聊天
+      break;
+  }
+}
+
+// 发送数据
+function mpSend(data) {
+  if (conn && conn.open) {
+    conn.send(data);
+  }
+}
+
+// 发送骰子
+function mpSendDice() {
+  mpSend({ type: 'dice', dice: mpMyDice });
+}
+
+// 发送叫点
+function mpSendBid(bid) {
+  mpSend({ type: 'bid', bid: bid });
+}
+
+// 发送开盅
+function mpSendChallenge() {
+  mpSend({ type: 'challenge' });
+}
+
+// 开始联机游戏
+function mpStartGame() {
+  document.getElementById('mpOpponentBar').style.display = 'flex';
+  document.getElementById('cheatBtn').style.display = 'none';
+  mpGameActive = true;
+  
+  // 联机模式：对手名称改为"好友"
+  document.querySelector('#computerZone .player-name').textContent = '好友';
+  const scoreItem = document.querySelector('#computerWins').parentElement;
+  scoreItem.innerHTML = '<div class="score-dot c"></div> 好友 <span id="computerWins">0</span> 胜';
+  
+  // 关闭封面，进入游戏
+  document.getElementById('coverPage').classList.add('hidden');
+  setTimeout(() => {
+    document.getElementById('coverPage').style.display = 'none';
+  }, 500);
+  
+  // 初始化游戏
+  newRound();
+}
+
+// 处理断开连接
+function mpHandleDisconnect() {
+  document.getElementById('gameMsg').textContent = '连接断开，尝试重连...';
+  document.getElementById('mpConnectionStatus').textContent = '🟡 重连中...';
+  document.getElementById('mpConnectionStatus').className = 'mp-connection-status reconnecting';
+  
+  // 标记断开，但不立即结束游戏
+  mpConnected = false;
+  
+  // 10秒重连等待期
+  setTimeout(() => {
+    if (mpConnected) return; // 已恢复
+    
+    mpGameActive = false;
+    document.getElementById('mpConnectionStatus').textContent = '🔴 已断开';
+    document.getElementById('mpConnectionStatus').className = 'mp-connection-status disconnected';
+    document.getElementById('mpOpponentBar').style.display = 'none';
+    document.getElementById('cheatBtn').style.display = '';
+    
+    // 弹出断开提示
+    document.getElementById('modalEmoji').textContent = '😢';
+    document.getElementById('modalTitle').textContent = '连接已断开';
+    document.getElementById('modalDetail').textContent = '对手已离开游戏。可刷新页面重新联机。';
+    document.getElementById('modalDice').innerHTML = '';
+    document.getElementById('modalOverlay').classList.add('show');
+  }, 10000);
+}
+
+// 分享房间（微信弹窗）
+function mpShareRoom() {
+  const shareText = `来和我一起玩骰子大作战！房间号：${mpRoomCode}`;
+  const shareUrl = `${window.location.origin}${window.location.pathname}?room=${mpRoomCode}`;
+  
+  // 尝试调用微信JS-SDK
+  if (typeof wx !== 'undefined' && wx.miniProgram) {
+    // 微信小程序环境
+    wx.miniProgram.navigateTo({
+      url: `/pages/webview/webview?url=${encodeURIComponent(shareUrl)}`
+    });
+  } else if (navigator.share) {
+    // Web Share API（支持微信内浏览器）
+    navigator.share({
+      title: '骰子大作战',
+      text: shareText,
+      url: shareUrl
+    }).catch(() => {
+      mpShowWeChatPopup(shareText, shareUrl);
+    });
+  } else {
+    mpShowWeChatPopup(shareText, shareUrl);
+  }
+}
+
+// 显示微信分享弹窗
+function mpShowWeChatPopup(text, url) {
+  const popup = document.createElement('div');
+  popup.className = 'mp-overlay show';
+  popup.id = 'mpWeChatPopup';
+  popup.innerHTML = `
+    <div class="mp-modal">
+      <div class="mp-title">发送给好友</div>
+      <div class="mp-subtitle">点击右上角发送给好友</div>
+      <div class="mp-wechat-tip">
+        <div class="mp-wechat-icon">📱</div>
+        <div>点击右上角 → 发送给朋友</div>
+      </div>
+      <div class="mp-share-preview">
+        <div class="mp-share-title">🎲 骰子大作战</div>
+        <div class="mp-share-desc">${text}</div>
+      </div>
+      <button class="mp-close" onclick="document.getElementById('mpWeChatPopup').remove()">关闭</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+  
+  // 添加微信提示样式
+  const style = document.createElement('style');
+  style.textContent = `
+    .mp-wechat-tip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 16px;
+      background: rgba(7,193,96,0.1);
+      border-radius: 10px;
+      margin-bottom: 16px;
+      font-size: 0.85rem;
+    }
+    .mp-wechat-icon {
+      font-size: 1.5rem;
+    }
+    .mp-share-preview {
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    .mp-share-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+    .mp-share-desc {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.6);
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// 复制房间号
+function mpCopyRoomCode() {
+  navigator.clipboard.writeText(mpRoomCode).then(() => {
+    document.getElementById('mpCopyBtn').textContent = '✅ 已复制';
+    setTimeout(() => {
+      document.getElementById('mpCopyBtn').textContent = '📋 复制房间号';
+    }, 2000);
+  });
+}
+
+// 检查URL参数是否包含房间号
+function mpCheckRoomParam() {
+  const params = new URLSearchParams(window.location.search);
+  const room = params.get('room');
+  if (room) {
+    // 自动打开加入房间弹窗
+    setTimeout(() => {
+      document.getElementById('mpJoinOverlay').classList.add('show');
+      document.getElementById('mpJoinCode').value = room;
+    }, 500);
+  }
+}
+
+// 联机模式事件绑定
+function mpBindEvents() {
+  document.getElementById('coverStartBtn').addEventListener('click', () => {
+    document.getElementById('mpModeOverlay').classList.add('show');
+  });
+  
+  document.getElementById('mpModeClose').addEventListener('click', () => {
+    document.getElementById('mpModeOverlay').classList.remove('show');
+    // 继续进入单人模式
+    mpStartSingle();
+  });
+  
+  document.getElementById('mpSingleBtn').addEventListener('click', () => {
+    document.getElementById('mpModeOverlay').classList.remove('show');
+    mpStartSingle();
+  });
+  
+  document.getElementById('mpCreateBtn').addEventListener('click', () => {
+    document.getElementById('mpModeOverlay').classList.remove('show');
+    document.getElementById('mpCreateOverlay').classList.add('show');
+    mpCreateRoom();
+  });
+  
+  document.getElementById('mpJoinBtn').addEventListener('click', () => {
+    document.getElementById('mpModeOverlay').classList.remove('show');
+    document.getElementById('mpJoinOverlay').classList.add('show');
+  });
+  
+  document.getElementById('mpCreateClose').addEventListener('click', () => {
+    document.getElementById('mpCreateOverlay').classList.remove('show');
+    if (peer) { peer.destroy(); peer = null; }
+  });
+  
+  document.getElementById('mpJoinClose').addEventListener('click', () => {
+    document.getElementById('mpJoinOverlay').classList.remove('show');
+  });
+  
+  document.getElementById('mpJoinSubmit').addEventListener('click', () => {
+    const code = document.getElementById('mpJoinCode').value.toUpperCase();
+    mpJoinRoom(code);
+  });
+  
+  document.getElementById('mpShareBtn').addEventListener('click', () => {
+    mpShareRoom();
+  });
+  
+  document.getElementById('mpCopyBtn').addEventListener('click', () => {
+    mpCopyRoomCode();
+  });
+}
+
+function mpStartSingle() {
+  // 进入单人模式（原逻辑）
+  const cover = document.getElementById('coverPage');
+  cover.classList.add('hidden');
+  setTimeout(() => {
+    cover.style.display = 'none';
+  }, 500);
+}
+
+// ============ 初始化 ============
+straightLen = 2;
+createParticles();
+updateUI();
+mpBindEvents();
+mpCheckRoomParam();
+
+// 猜顺子默认选中长度2
+document.querySelector('#straightLenGroup [data-val="2"]')?.classList.add('active');
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# dsh-dice-game bundle patch: inserts the dice game plugin row into the web
+# profile roster. The node half (exports ".") serves the game's static assets
+# through the /dice-game route family; the `dsh.client` declaration makes the
+# browser half (exports "./client") load in the web GUI and mount the sidebar
+# entry + center-column game panel.
+- insert:
+    - id: dice-game
+      name: 'dsh-dice-game'
