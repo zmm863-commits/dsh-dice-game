@@ -1,6 +1,6 @@
 {
   "name": "dsh-dice-game",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "🎲 骰子大作战 (Dice Battle) — a classic dice game collection for the dsh web GUI: Liar's Dice (吹牛), Red-point guessing, Red/Blue, Big/Small, Odd/Even and Straight, single-player vs AI plus PeerJS WebRTC online play. Adds a sidebar entry that opens the full game in the center column.",
   "type": "module",
   "license": "MIT",
