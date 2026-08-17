@@ -1,58 +1,59 @@
-# 🎲 dsh-dice-game — 骰子大作战
+# 🎲 dsh-dice-game — Dice Battle (骰子大作战)
 
-经典骰子游戏合集，作为 DSH Web GUI 插件运行。侧边栏「🎲 骰子大作战」入口打开游戏面板，直接在中心列游玩。
+A collection of classic dice games that runs as a DSH Web GUI plugin. The sidebar entry "🎲 骰子大作战" opens the game panel right in the center column. **Fully bilingual (中文 / English)** — tap the 🌐 button in the top-right corner to switch languages at any time.
 
-## 玩法
+经典骰子游戏合集，作为 DSH Web GUI 插件运行。侧边栏「🎲 骰子大作战」入口打开游戏面板，直接在中心列游玩。**支持中英文切换**——点击右上角 🌐 按钮随时切换语言。
 
-- **吹牛（Liar's Dice）**：经典吹牛骰子，单人 vs AI，支持 PeerJS WebRTC 联机对战
-- **猜红点 / 猜红蓝 / 猜大小 / 猜单双 / 猜顺子**：另 5 种骰子玩法
+## Games / 玩法
 
-游戏为纯前端 HTML（`assets/index.html` + `peerjs.min.js` + `qrcode.min.js`），由插件宿主端通过 `/dice-game/` 路由同源提供，客户端在中心列 iframe 中加载。
+- **Liar's Dice (吹牛)** — the classic bluffing dice game, single-player vs AI, with PeerJS WebRTC online play
+- **Guess Red Dots (猜红点) / Guess Red/Blue (猜红蓝) / Guess Big/Small (猜大小) / Guess Odd/Even (猜单双) / Guess Straight (猜顺子)** — five more dice games
 
-## 安装
+The game is pure frontend HTML (`assets/index.html` + `peerjs.min.js` + `qrcode.min.js`), served same-origin by the plugin host via the `/dice-game/` route, loaded in the center-column iframe.
+
+## Languages / 语言
+
+- 🌐 **Chinese & English** switchable in-game (persisted in localStorage)
+- 中文与英文双语切换（自动记忆选择）
+
+## Install / 安装
 
 ```sh
 dsh plugin --profile web add dsh-dice-game
-# 或本地开发：
+# or local development:
 dsh plugin --profile web add link:/root/软件项目/骰子大作战
 ```
 
-重启 `dsh web`，在侧边栏点击「🎲 骰子大作战」即可开始游戏。
+Restart `dsh web`, then click "🎲 骰子大作战" in the sidebar to start playing.
 
-## 开发
+## Development / 开发
 
 ```sh
 npm install
-npm run build      # tsdown 构建 + 复制 assets 到 lib/assets
-npm run watch      # 监听构建
+npm run build      # tsdown build + copy assets to lib/assets
+npm run watch      # watch mode
 ```
 
-### 项目结构
+### Project structure / 项目结构
 
 ```
 src/
-  index.ts          # 宿主端：/dice-game 静态路由 + agent 系统提示
+  index.ts          # Host: /dice-game static route + agent system prompt
   client/
-    index.ts        # 客户端入口：挂载侧边栏入口 + 游戏面板
-    controller.ts   # 面板开关状态（无框架）
-    sidebar-entry.ts# 侧边栏入口（DOM 注入 + MutationObserver 自愈）
-    mount.ts        # 中心列面板（标题栏 + iframe）
-    styles.ts       # 面板与入口样式（--dsw-* 主题变量）
-assets/             # 游戏静态资源（构建时复制到 lib/assets）
-cordis.patch.yml    # profile bundle 挂载补丁
+    index.ts        # Client entry: sidebar entry + game panel
+    controller.ts   # Panel open/close state (framework-free)
+    sidebar-entry.ts# Sidebar entry (DOM injection + MutationObserver self-heal)
+    mount.ts        # Center-column panel (title bar + iframe)
+    styles.ts       # Panel & entry styles (--dsw-* theme vars)
+assets/             # Game static assets (copied to lib/assets on build)
+cordis.patch.yml    # profile bundle mount patch
 ```
 
-## 已知限制
+## Known limitations / 已知限制
 
-- 联机模式依赖 PeerJS 公共信令服务器（国内网络可能需要科学上网）
-- 游戏为休闲娱乐用途，不含真实货币或赌博功能
+- Online mode depends on the PeerJS public signaling server (may need a proxy in mainland China)
+- Game is for casual entertainment only — no real money or gambling
 
-## 发布
-
-1. `npm run build`
-2. `npm publish`（发布到 npm registry）
-3. 在 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 提 PR，把插件加入精选列表，市场（dshmarket）即自动收录
-
-## 许可
+## License / 许可
 
 MIT

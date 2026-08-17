@@ -112,7 +112,7 @@ export function makeRoutes(deps: DiceGameRouteDeps = {}): WebRoute[] {
 
 /** Model-facing announcement: plugin presence and what it offers. */
 export const DICE_GAME_GUIDANCE =
-  '本机已安装 dsh-dice-game 插件（骰子大作战）：侧边栏「🎲 骰子大作战」入口打开游戏面板。能力：经典骰子游戏合集，含吹牛（单人 vs AI 与 PeerJS WebRTC 联机）、猜红点、猜红蓝、猜大小、猜单双、猜顺子 6 种玩法；游戏为纯前端 HTML，运行于 /dice-game/。限制：联机模式依赖 PeerJS 公共信令服务器（国内可能需科学上网）；游戏为休闲娱乐用途，不含任何真实货币或赌博功能。用户提到「骰子大作战 / 骰子游戏 / 吹牛骰子 / dice game」时即指本插件，可引导其从侧边栏入口打开游戏。'
+  '本机已安装 dsh-dice-game 插件（骰子大作战）：侧边栏「🎲 骰子大作战」入口打开游戏面板。能力：经典骰子游戏合集，含吹牛（单人 vs AI）、猜红点、猜红蓝、猜大小、猜单双、猜顺子 6 种玩法；游戏为纯前端 HTML，运行于 /dice-game/。当前为单机版：联机功能暂缓上线（MP_DISABLED），后续按需恢复。限制：游戏为休闲娱乐用途，不含任何真实货币或赌博功能。用户提到「骰子大作战 / 骰子游戏 / 吹牛骰子 / dice game」时即指本插件，可引导其从侧边栏入口打开游戏。'
 
 /** Section order within the tool-guidance band. */
 const SECTION_ORDER = 300

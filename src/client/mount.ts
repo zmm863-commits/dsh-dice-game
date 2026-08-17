@@ -32,9 +32,29 @@ function conversationColumn(): HTMLElement | undefined {
   return document.querySelector<HTMLElement>(CONVERSATION_COLUMN_SELECTOR) ?? undefined
 }
 
-/** The game's index URL (same origin, served by the host half). */
+/** The game's index URL (same origin, served by the host half).
+ *
+ * The query string carries the DSH-host context into the game:
+ *  - `room`: a room code present in the GUI's own URL (?room=…) — the game
+ *    auto-opens the join overlay pre-filled with it (mpCheckRoomParam).
+ *  - `diceBase`: an optional public base URL (from the GUI URL ?diceBase=…
+ *    or localStorage dicePublicBase) — the game uses it to build shareable
+ *    invite links (mpBuildJoinUrl) instead of degrading to room-code only.
+ * Without diceBase the game still works fully; sharing just degrades to the
+ * room-code card, which is correct for a DSH-embedded (non-public) origin.
+ */
 function gameUrl(): string {
-  return location.origin + '/dice-game/'
+  const params = new URLSearchParams(window.location.search)
+  const qs: string[] = []
+  const room = params.get('room')
+  if (room) qs.push('room=' + encodeURIComponent(room))
+  let diceBase = params.get('diceBase')
+  if (!diceBase) {
+    try { diceBase = localStorage.getItem('dicePublicBase') ?? '' } catch { diceBase = '' }
+  }
+  if (diceBase) qs.push('diceBase=' + encodeURIComponent(diceBase))
+  const suffix = qs.length > 0 ? '?' + qs.join('&') : ''
+  return location.origin + '/dice-game/' + suffix
 }
 
 /**

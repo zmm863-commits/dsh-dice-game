@@ -47,9 +47,25 @@ const check = (name, cond, extra = '') => {
   if (!cond) failures++
 }
 
-// ── Load and apply the plugin ──────────────────────────────────────────────
-const { apply } = await import('../lib/client.js')
-apply(ctx)
+// ── Load and apply the plugin (through the __ModuleLoader__ contract) ──────
+// lib/client.js is now wrapped as window.__ModuleLoader__.load({ id, factory }),
+// mirroring how the DSH web shell materializes plugin bundles.
+const loadedFactories = new Map()
+dom.window.__ModuleLoader__ = {
+  load(handoff) { loadedFactories.set(handoff.id, handoff.factory) },
+}
+const bundleSource = await import('node:fs').then(({ readFileSync }) =>
+  readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8'),
+)
+dom.window.eval(bundleSource)
+const factory = loadedFactories.get('dsh-dice-game')
+if (typeof factory !== 'function') {
+  console.error('✗ client bundle did not register a factory via __ModuleLoader__.load')
+  process.exit(1)
+}
+const plugin = factory(() => { throw new Error('unexpected require from self-contained bundle') })
+check('bundle factory exposes apply', typeof plugin.apply === 'function')
+plugin.apply(ctx)
 
 // Flush microtasks so MutationObserver callbacks run.
 await new Promise((r) => setTimeout(r, 50))

@@ -43,6 +43,11 @@
       "platform": "web"
     }
   },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-host-webserver": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6"
+  },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6",
@@ -52,7 +57,7 @@
     "typescript": "^7.0.2"
   },
   "scripts": {
-    "build": "tsdown && node scripts/copy-assets.mjs",
+    "build": "tsdown && node build.mjs && node scripts/copy-assets.mjs",
     "watch": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node scripts/smoke-host.mjs && node scripts/smoke-client.mjs && node scripts/smoke-cordis.mjs"
