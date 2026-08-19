@@ -10,8 +10,11 @@
  * subtree underneath stays mounted and stateful.
  *
  * The panel content is an <iframe> loading the game from the host route
- * (/dice-game/), served by the host half. The iframe keeps the game sandboxed
- * from the GUI while still being same-origin (WebRTC / PeerJS works).
+ * (/dice-game/), served by the host half. The iframe is an opaque-origin
+ * sandbox (no allow-same-origin): the game document is fully isolated from
+ * the GUI — no page DOM, cookies, localStorage or same-origin DSH API access.
+ * PeerJS/WebRTC still works because signaling goes over wss:// to the PeerJS
+ * cloud, which is origin-independent.
  */
 import type { PanelController } from './controller.ts'
 import { injectStyles } from './styles.ts'
@@ -108,7 +111,14 @@ export function mountPanel(controller: PanelController): () => void {
     iframe.className = 'dsh-dicegame-frame'
     iframe.src = gameUrl()
     iframe.setAttribute('allow', 'camera; microphone; autoplay')
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups')
+    // Opaque-origin sandbox: no allow-same-origin, so the game document is
+    // isolated from the GUI — it cannot read the page's DOM, cookies or
+    // localStorage, nor call same-origin DSH APIs. Scripts/forms/popups are
+    // still allowed (the game is self-contained JS + PeerJS WebRTC).
+    iframe.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups')
+    // PeerJS WebRTC needs real ICE candidates; the iframe stays opaque-origin
+    // but WebRTC signaling goes over wss:// to the PeerJS cloud, not the GUI.
+    iframe.allow = 'camera; microphone; autoplay; display-capture'
     reload.addEventListener('click', () => {
       if (iframe === undefined) return
       // Force a fresh document so the game resets completely.

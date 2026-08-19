@@ -23,9 +23,9 @@ A collection of classic dice games that runs as a DSH Web GUI plugin. The sideba
 - **Guess Odd/Even (猜单双)** · 单双对决
 - **Guess Straight (猜顺子)** · 顺子挑战
 
-The game is pure frontend HTML (`assets/index.html` + `peerjs.min.js` + `qrcode.min.js`), served same-origin by the plugin host via the `/dice-game/` route, loaded in the center-column iframe.
+The game is pure frontend HTML (`assets/index.html` + `peerjs.min.js` + `qrcode.min.js`), served by the plugin host via the `/dice-game/` route, loaded in a center-column iframe. The iframe is an **opaque-origin sandbox** (no `allow-same-origin`): the game document is isolated from the DSH GUI and cannot read its DOM, cookies, localStorage, or same-origin APIs. PeerJS/WebRTC online play still works because signaling goes over the PeerJS cloud (wss), which does not require same-origin access.
 
-游戏为纯前端 HTML（`assets/index.html` + `peerjs.min.js` + `qrcode.min.js`），由插件 host 通过 `/dice-game/` 路由同源托管，在中心列 iframe 中加载。
+游戏为纯前端 HTML（`assets/index.html` + `peerjs.min.js` + `qrcode.min.js`），由插件 host 通过 `/dice-game/` 路由托管，在中心列 iframe 中加载。iframe 使用**不透明源沙箱**（无 `allow-same-origin`）：游戏文档与 DSH GUI 完全隔离，无法读取页面 DOM、Cookie、localStorage 或同源 API。PeerJS/WebRTC 联机仍可正常使用，因为信令走 PeerJS 云端（wss），不依赖同源权限。
 
 ## About / 关于玩法
 

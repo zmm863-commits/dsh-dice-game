@@ -90,6 +90,7 @@ const frame = doc.querySelector('[data-dsh-dicegame-view] iframe')
 check('game iframe present', frame !== null)
 check('iframe points at /dice-game/', frame?.getAttribute('src') === 'http://127.0.0.1:3080/dice-game/' ?? false)
 check('iframe sandboxed', frame?.getAttribute('sandbox')?.includes('allow-scripts') ?? false)
+check('iframe is opaque-origin (no allow-same-origin)', frame?.getAttribute('sandbox')?.includes('allow-same-origin') === false ?? false)
 
 // Click again → panel closes.
 entry?.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }))
