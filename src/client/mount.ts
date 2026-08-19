@@ -3,8 +3,8 @@
  *
  * The `conversation` slot is single-occupant (ui-conversation) and external
  * plugins cannot declare slots, so the panel takes over the center column at
- * the DOM level: a container is appended inside the `[data-pane="conversation"]`
- * grid item (an extra trailing child React never manages), and a stylesheet
+ * the DOM level: a container is appended inside the center-column grid item
+ * (an extra trailing child React never manages), and a stylesheet
  * rule hides the conversation content while the panel is active. Toggling is
  * a data attribute on <html> — no React involvement, so the conversation
  * subtree underneath stays mounted and stateful.
@@ -22,7 +22,11 @@ import { injectStyles } from './styles.ts'
 /** The injected panel container (kept in the DOM, hidden when inactive). */
 export const PANEL_VIEW_SELECTOR = '[data-dsh-dicegame-view]'
 
-const CONVERSATION_COLUMN_SELECTOR = '[data-pane="conversation"]'
+// The rc.7+ web shell hashes its layout classes (no stable data-pane
+// attributes); the center column is identified by the module-scoped
+// `centerCol` class. Fall back to the older data-pane attribute for
+// pre-rc.7 shells.
+const CONVERSATION_COLUMN_SELECTOR = '[class*="centerCol"], [data-pane="conversation"]'
 const ACTIVE_ATTR = 'data-dsh-dicegame-active'
 /** The sibling panels' activation attributes, removed when this panel opens. */
 const OTHER_ACTIVE_ATTRS = ['data-dsh-taskboard-active', 'data-dsh-ssh-active']

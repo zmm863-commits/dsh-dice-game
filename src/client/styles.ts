@@ -8,7 +8,8 @@
 const CSS = `
 /* --- center-column takeover (global rules, attribute-scoped) ---------------- */
 
-[data-pane='conversation'] {
+[data-pane='conversation'],
+[class*='centerCol'] {
   position: relative;
 }
 

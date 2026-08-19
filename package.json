@@ -1,6 +1,6 @@
 {
   "name": "dsh-dice-game",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "🎲 骰子大作战 (Dice Battle) — classic dice games from Jincheng, Shanxi, China (中国山西晋城传统骰子玩法): Liar's Dice (吹牛), Red-point guessing, Red/Blue, Big/Small, Odd/Even and Straight. Single-player vs AI plus PeerJS WebRTC online play, fully bilingual zh/en. Adds a sidebar entry that opens the full game in the center column.",
   "type": "module",
   "license": "MIT",
