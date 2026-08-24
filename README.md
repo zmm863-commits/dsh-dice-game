@@ -89,6 +89,19 @@ docs/               # Poster & promotional assets
 - Online multiplayer is temporarily disabled (MP_DISABLED) — single-player only for now · 联机暂缓上线，当前为单机版
 - Game is for casual entertainment only — no real money or gambling · 游戏仅为休闲娱乐用途，不含任何真实货币或赌博功能
 
+
+## 反馈 / Feedback
+
+有任何问题、建议或想汇报 bug？欢迎在 GitHub 提 issue：
+
+- 🐛 **Bug 反馈**：描述问题 + 复现步骤 + 截图（如有）
+- 💡 **功能建议**：告诉我们你想加什么玩法或改进
+- 💬 **一般讨论**：任何关于骰子游戏的反馈都欢迎
+
+👉 [提交 Issue](https://github.com/zmm863-commits/dsh-dice-game/issues/new)
+
+---
+
 ## License / 许可
 
 MIT
