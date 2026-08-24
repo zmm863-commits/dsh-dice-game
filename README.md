@@ -100,6 +100,8 @@ docs/               # Poster & promotional assets
 
 👉 [提交 Issue](https://github.com/zmm863-commits/dsh-dice-game/issues/new)
 
+📧 联系邮箱：zmm168@163.com
+
 ---
 
 ## License / 许可
