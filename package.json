@@ -60,6 +60,6 @@
     "build": "tsdown && node build.mjs && node scripts/copy-assets.mjs",
     "watch": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node scripts/smoke-host.mjs && node scripts/smoke-client.mjs && node scripts/smoke-cordis.mjs"
+    "test": "node scripts/smoke-host.mjs && node scripts/smoke-client.mjs && node scripts/smoke-cordis.mjs && node scripts/smoke-p0.mjs"
   }
 }

@@ -64,6 +64,112 @@ function gameUrl(): string {
   return location.origin + '/dice-game/' + suffix
 }
 
+// ── DICE-SAVE v1 postMessage 存储桥（宿主侧） ────────────────────────────
+// The game iframe is opaque-origin (no allow-same-origin), so the game cannot
+// touch localStorage: every attempt throws a SecurityError. Persistence works
+// through this bridge instead: the game posts dice-get/dice-set requests, and
+// the HOST page performs the localStorage access on its behalf.
+//
+// Security model: the iframe's origin is the string "null", so an allow-list
+// of origins cannot work. The host authenticates messages by REFERENCE:
+// event.source must be the live contentWindow of OUR iframe element. Keys are
+// pinned to an explicit dice_* whitelist, values are size-capped JSON strings.
+const DICE_SAVE_CHANNEL = 'DICE-SAVE'
+const DICE_SAVE_VERSION = 1
+/** Explicit persistence key whitelist (all game-owned, all dice_-prefixed). */
+const DICE_SAVE_KEYS: ReadonlySet<string> = new Set([
+  'dice_lang',
+  'dice_stats',
+  'dice_muted',
+  'dice_streak',
+  'dice_tasks',
+  'dice_ai_level',
+  'dice_fx',
+])
+/** Hard cap on one stored value (JSON text bytes) — truncation defense. */
+const DICE_SAVE_MAX_VALUE_BYTES = 64 * 1024
+
+interface DiceSaveMessage {
+  v?: unknown
+  ch?: unknown
+  cmd?: unknown
+  key?: unknown
+  json?: unknown
+  req?: unknown
+}
+
+const utf8Bytes = (s: string): number => new TextEncoder().encode(s).length
+
+const isDiceSaveKey = (key: unknown): key is string =>
+  typeof key === 'string' && key.startsWith('dice_') && DICE_SAVE_KEYS.has(key)
+
+/** Read-through host localStorage; corrupt JSON reads as null (self-heals). */
+const diceHostGet = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+const diceHostSet = (key: string, json: string): boolean => {
+  if (utf8Bytes(json) > DICE_SAVE_MAX_VALUE_BYTES) return false
+  try {
+    localStorage.setItem(key, json)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Install the host-side half of the storage bridge for the given frame getter.
+ * @param getFrame - returns the current game iframe (may be undefined between mounts).
+ * @returns disposer removing the window message listener.
+ */
+export function installDiceStorageBridge(getFrame: () => HTMLIFrameElement | undefined): () => void {
+  const onMessage = (event: MessageEvent): void => {
+    // Reference comparison, NOT origin matching — opaque origin is "null".
+    const frame = getFrame()
+    if (frame === undefined || frame.contentWindow === null) return
+    if (event.source !== frame.contentWindow) return
+    const data = event.data as DiceSaveMessage | null | undefined
+    if (data === null || typeof data !== 'object') return
+    if (data.ch !== DICE_SAVE_CHANNEL || data.v !== DICE_SAVE_VERSION) return
+    const win = frame.contentWindow
+    const reply = (payload: Record<string, unknown>): void => {
+      try {
+        win.postMessage({ v: DICE_SAVE_VERSION, ch: DICE_SAVE_CHANNEL, ...payload }, '*')
+      } catch {
+        // Frame navigated away mid-handshake; nothing to do.
+      }
+    }
+    const req = typeof data.req === 'string' ? data.req : ''
+    switch (data.cmd) {
+      case 'hello':
+        // Announce the backing store kind ('ls' when host localStorage works).
+        let lsOk = true
+        try { localStorage.setItem('__dice_probe_h', '1'); localStorage.removeItem('__dice_probe_h') } catch { lsOk = false }
+        reply({ cmd: 'ready', storage: lsOk ? 'ls' : 'mem', req })
+        break
+      case 'dice-get': {
+        const json = isDiceSaveKey(data.key) ? diceHostGet(data.key) : null
+        reply({ cmd: 'dice-data', key: data.key, json, req })
+        break
+      }
+      case 'dice-set': {
+        const ok = isDiceSaveKey(data.key) && typeof data.json === 'string' && diceHostSet(data.key, data.json)
+        reply({ cmd: 'dice-ok', key: data.key, ok, req })
+        break
+      }
+      default:
+        break
+    }
+  }
+  window.addEventListener('message', onMessage)
+  return () => { window.removeEventListener('message', onMessage) }
+}
+
 /**
  * Mount the game panel into the center column and bind its visibility to the
  * controller's panelOpen state.
@@ -75,6 +181,9 @@ export function mountPanel(controller: PanelController): () => void {
 
   let container: HTMLDivElement | undefined
   let iframe: HTMLIFrameElement | undefined
+
+  // P0① 持久化：opaque iframe 的存储由宿主代存（DICE-SAVE v1）
+  const removeStorageBridge = installDiceStorageBridge(() => iframe)
 
   const ensure = (): void => {
     if (container !== undefined) {
@@ -180,6 +289,7 @@ export function mountPanel(controller: PanelController): () => void {
     document.removeEventListener(ACTIVATE_EVENT, onOtherActivate)
     waitObserver.disconnect()
     unsubscribe()
+    removeStorageBridge()
     document.documentElement.removeAttribute(ACTIVE_ATTR)
     iframe?.remove()
     iframe = undefined

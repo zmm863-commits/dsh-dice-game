@@ -269,6 +269,149 @@
     80% { transform: rotate(5deg) scale(1); }
   }
 
+  /* ===== 震屏三档（P0③）：失败小 / 挑战失败中 / 围骰·头奖大 ===== */
+  .game-area.shake-s { animation: shake-s 0.28s ease-out; }
+  .game-area.shake-m { animation: shake-m 0.42s ease-out; }
+  .game-area.shake-l { animation: shake-l 0.6s ease-out; }
+  @keyframes shake-s {
+    0%, 100% { transform: translate3d(0,0,0); }
+    25% { transform: translate3d(-3px,0,0); }
+    75% { transform: translate3d(3px,0,0); }
+  }
+  @keyframes shake-m {
+    0%, 100% { transform: translate3d(0,0,0); }
+    15% { transform: translate3d(-7px,2px,0); }
+    45% { transform: translate3d(6px,-2px,0); }
+    75% { transform: translate3d(-4px,1px,0); }
+  }
+  @keyframes shake-l {
+    0%, 100% { transform: translate3d(0,0,0); }
+    10% { transform: translate3d(-11px,4px,0) rotate(-0.5deg); }
+    35% { transform: translate3d(10px,-4px,0) rotate(0.5deg); }
+    65% { transform: translate3d(-8px,3px,0) rotate(-0.4deg); }
+    85% { transform: translate3d(5px,-2px,0) rotate(0.2deg); }
+  }
+
+  /* ===== Confetti（P0③）：60 粒 rAF，只写 transform/opacity ===== */
+  .confetti-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9998;
+  }
+  .confetti-bit {
+    position: absolute;
+    top: -18px;
+    width: 9px;
+    height: 15px;
+    border-radius: 2px;
+    will-change: transform, opacity;
+  }
+
+  /* ===== 连胜🔥称号章（P0⑤）===== */
+  .streak-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+  .streak-chip .flame { display: inline-block; animation: streak-pulse 1s ease-in-out infinite; }
+  .streak-chip.hot { border-color: rgba(251,146,60,0.55); background: rgba(251,146,60,0.12); color: #fdba74; }
+  @keyframes streak-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.25); }
+  }
+  /* 生涯战绩行 */
+  .career-line {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  /* ===== 轻提示 toast（升档/保护/降级）===== */
+  .dice-toast-wrap {
+    position: fixed;
+    top: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .dice-toast {
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: rgba(30,27,75,0.92);
+    border: 1px solid rgba(167,139,250,0.5);
+    color: #e9d5ff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    max-width: 86vw;
+    text-align: center;
+  }
+  .dice-toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ===== 吹牛 AI 难度选择器（P0④）===== */
+  .ai-level-group {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+  }
+  .ai-level-btn {
+    padding: 5px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.75);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .ai-level-btn.active {
+    background: linear-gradient(135deg,#7c3aed,#4f46e5);
+    border-color: rgba(196,181,253,0.8);
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(124,58,237,0.45);
+  }
+
+  /* ===== 大小模式围骰押项（P0⑥）===== */
+  .side-bet-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    user-select: none;
+  }
+  .side-bet-row input[type="checkbox"] {
+    accent-color: #f59e0b;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+  /* 彩金结算行（弹窗内） */
+  .payout-line { color: #fbbf24; font-weight: 700; }
+
   .dot {
     width: 100%;
     aspect-ratio: 1;
@@ -1370,10 +1513,12 @@
       <div class="bid-value" id="bidValue" data-i18n="尚未叫点">尚未叫点</div>
     </div>
     <div class="game-msg" id="gameMsg" data-i18n="点击「开始新局」发骰子">点击「开始新局」发骰子</div>
-    <div class="scoreboard">
+    <div class="scoreboard" id="scoreBoard">
       <div class="score-item"><div class="score-dot p"></div> 你 <span id="playerWins">0</span> 胜</div>
       <div class="score-item"><div class="score-dot c"></div> 电脑 <span id="computerWins">0</span> 胜</div>
     </div>
+    <div class="streak-chip" id="streakChip"></div>
+    <div class="career-line" id="careerLine"></div>
   </div>
 
   <!-- 玩家区域 -->
@@ -1418,6 +1563,16 @@
           <button class="num-btn" data-val="5">5</button>
           <button class="num-btn" data-val="6">6</button>
           <button class="num-btn" data-val="1">①</button>
+        </div>
+      </div>
+    </div>
+    <div class="control-row">
+      <div class="control-group" style="flex-direction:column; align-items:center; gap:6px;">
+        <span class="control-label" data-i18n="🤖 AI 难度">🤖 AI 难度</span>
+        <div class="ai-level-group" id="aiLevelGroup">
+          <button class="ai-level-btn" data-level="rookie" data-i18n="新手">新手</button>
+          <button class="ai-level-btn active" data-level="normal" data-i18n="普通">普通</button>
+          <button class="ai-level-btn" data-level="master" data-i18n="大师">大师</button>
         </div>
       </div>
     </div>
@@ -1545,6 +1700,10 @@
         </div>
       </div>
     </div>
+    <div class="side-bet-row">
+      <input type="checkbox" id="bigSmallTripleBet">
+      <label for="bigSmallTripleBet" data-i18n="🎯 押围骰彩金（全场同点，中 = ×35）">🎯 押围骰彩金（全场同点，中 = ×35）</label>
+    </div>
     <div class="action-btns" id="bigSmallActions">
       <button class="action-btn btn-bid" id="btnBigSmallBid" disabled data-i18n="📢 叫点">📢 叫点</button>
       <button class="action-btn btn-challenge" id="btnBigSmallChallenge" disabled data-i18n="🔍 开盅">🔍 开盅</button>
@@ -1654,6 +1813,33 @@ const I18N = {
   lang: 'zh', // 'zh' | 'en'
   dict: {
     zh: {
+      // —— P0 新增词条 ——
+      '{n}连胜！称号升级：{t}': '{n}连胜！称号升级：{t}',
+      '{n}连胜': '{n}连胜',
+      '连败保护：下一局 AI 自动降档，赢下即回升': '连败保护：下一局 AI 自动降档，赢下即回升',
+      '保护局获胜！连胜 +2': '保护局获胜！连胜 +2',
+      '进度暂不保存（独立浏览模式）': '进度暂不保存（独立浏览模式）',
+      '生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}': '生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}',
+      '彩金 ×{m}：+{g} 骰币（累计 {c}）': '彩金 ×{m}：+{g} 骰币（累计 {c}）',
+      '围骰彩金': '围骰彩金',
+      '🎯 围骰押中！': '🎯 围骰押中！',
+      '连中×{n}': '连中×{n}',
+      '全红头奖！': '全红头奖！',
+      '高红档': '高红档',
+      '精确命中！': '精确命中！',
+      '差二回本': '差二回本',
+      '🤖 AI 难度': '🤖 AI 难度',
+      '新手': '新手',
+      '普通': '普通',
+      '大师': '大师',
+      '🎯 押围骰彩金（全场同点，中 = ×35）': '🎯 押围骰彩金（全场同点，中 = ×35）',
+      '音效开关': '音效开关',
+      '特效开关': '特效开关',
+      '💰 赔付：胜局 ×1；含三同色彩金 +×2；押围骰(全场同点)中 +×35': '💰 赔付：胜局 ×1；含三同色彩金 +×2；押围骰(全场同点)中 +×35',
+      '💰 赔付：连中递增 ×1→×1.5→×2 封顶': '💰 赔付：连中递增 ×1→×1.5→×2 封顶',
+      '💰 赔付：胜局 ×10': '💰 赔付：胜局 ×10',
+      '💰 赔付：红骰≥7 ×4.5 · 全红(10红) ×200 · 其余 ×1.8': '💰 赔付：红骰≥7 ×4.5 · 全红(10红) ×200 · 其余 ×1.8',
+      '💰 赔付：精确 ×20 · 差一 ×3 · 差二回本 ×1': '💰 赔付：精确 ×20 · 差一 ×3 · 差二回本 ×1',
       '⚖️ 猜大小': '⚖️ 猜大小',
       '⚡ 猜单双': '⚡ 猜单双',
       '与电脑AI对战': '与电脑AI对战',
@@ -2014,6 +2200,33 @@ const I18N = {
       '创建失败': 'Create failed',
       '连接失败': 'Connection failed',
       '胜': 'W',
+      // —— P0 new entries ——
+      '{n}连胜！称号升级：{t}': '{n}-win streak! Title up: {t}',
+      '{n}连胜': '{n}-win streak',
+      '连败保护：下一局 AI 自动降档，赢下即回升': 'Loss protection: AI drops a tier next round, win to recover',
+      '保护局获胜！连胜 +2': 'Protected win! Streak +2',
+      '进度暂不保存（独立浏览模式）': 'Progress will not be saved (standalone mode)',
+      '生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}': 'Career {w}W/{l}L · {c} coins · best 🔥{b}',
+      '彩金 ×{m}：+{g} 骰币（累计 {c}）': 'Payout ×{m}: +{g} coins (total {c})',
+      '围骰彩金': 'Triple jackpot',
+      '🎯 围骰押中！': '🎯 Triple bet hit!',
+      '连中×{n}': '{n} in a row',
+      '全红头奖！': 'ALL-RED JACKPOT!',
+      '高红档': 'High-red tier',
+      '精确命中！': 'Exact hit!',
+      '差二回本': 'Off by two, stake back',
+      '🤖 AI 难度': '🤖 AI Level',
+      '新手': 'Rookie',
+      '普通': 'Normal',
+      '大师': 'Master',
+      '🎯 押围骰彩金（全场同点，中 = ×35）': '🎯 Side-bet triple (all same face, pays ×35)',
+      '音效开关': 'Toggle sound',
+      '特效开关': 'Toggle effects',
+      '💰 赔付：胜局 ×1；含三同色彩金 +×2；押围骰(全场同点)中 +×35': '💰 Payout: win ×1; three-of-a-kind bonus +×2; triple side-bet (all same face) +×35',
+      '💰 赔付：连中递增 ×1→×1.5→×2 封顶': '💰 Payout: win ladder ×1 → ×1.5 → ×2 cap',
+      '💰 赔付：胜局 ×10': '💰 Payout: win ×10',
+      '💰 赔付：红骰≥7 ×4.5 · 全红(10红) ×200 · 其余 ×1.8': '💰 Payout: ≥7 red ×4.5 · all-red (10 red) ×200 · otherwise ×1.8',
+      '💰 赔付：精确 ×20 · 差一 ×3 · 差二回本 ×1': '💰 Payout: exact ×20 · off-by-one ×3 · off-by-two stake-back ×1',
     }
   },
   get(key, vars) {
@@ -2032,6 +2245,7 @@ const I18N = {
   setLang(lang) {
     this.lang = (lang === 'en') ? 'en' : 'zh';
     try { localStorage.setItem('diceGameLang', this.lang); } catch (e) {}
+    if (typeof DiceStore !== 'undefined') DiceStore.set('dice_lang', this.lang); // P0① 存储桥持久化
     this.applyToDom();
     this.refreshUI();
   },
@@ -2353,6 +2567,7 @@ function newRound() {
   }
 
   document.querySelectorAll('.dice').forEach(d => d.classList.add('shaking'));
+  SFX.roll(); // P0② 掷骰音效
 
   setTimeout(() => {
     document.querySelectorAll('.dice').forEach(d => d.classList.remove('shaking'));
@@ -2411,6 +2626,7 @@ function startBidding() {
 }
 
 function updateUI() {
+  if (typeof updateStreakChip === 'function') { updateStreakChip(); updateCareerLine(); } // P0⑤ 连胜章/生涯行
   // 更新叫点/猜红点/猜红蓝/猜大小/猜单双显示
   if (gameMode === 'liar') {
     document.getElementById('bidValue').innerHTML = formatBid(currentBid);
@@ -2764,6 +2980,7 @@ function computerRedTurn() {
 // 开盅判定
 function revealRedJudge(challenger) {
   gamePhase = 'revealing';
+  SFX.open(); // P0② 开盅音
   renderDice();
   
   const actualTotal = calcRedTotal([...playerDice, ...computerDice]);
@@ -2777,7 +2994,7 @@ function revealRedJudge(challenger) {
   detail += I18N.t('实际：{t} 点\n', {t: actualTotal});
   detail += `你的红点：${playerRed} 点\n`;
   detail += `电脑红点：${computerRed} 点\n`;
-  
+
   let winner, title, emoji;
   if (isLiar) {
     detail += `\n吹牛被识破！`;
@@ -2786,6 +3003,10 @@ function revealRedJudge(challenger) {
     detail += `\n叫点成立！`;
     winner = challenger === 0 ? 1 : 0;
   }
+
+  // P0⑥ 红点赔付分档按全场红骰数；P0⑤⑥ 结算钩子
+  var settleRedDice = [...playerDice, ...computerDice].filter(isRed).length;
+  detail += onSettle(winner, { challenger: challenger, redDice: settleRedDice });
   
   if (winner === 0) {
     title = '🎉 你赢了！';
@@ -2976,6 +3197,7 @@ function aiBigSmallDecide() {
 
 function revealBigSmallJudge(challenger) {
   gamePhase = 'revealing';
+  SFX.open(); // P0② 开盅音
   renderDice();
 
   const allDice = [...playerDice, ...computerDice];
@@ -2994,6 +3216,8 @@ function revealBigSmallJudge(challenger) {
     detail += `\n叫点成立！`;
     winner = challenger === 0 ? 1 : 0;
   }
+  // P0⑤⑥ 结算钩子（围骰彩金/押项在 onSettle 内处理）
+  detail += onSettle(winner, { challenger: challenger, allDice: allDice });
 
   if (winner === 0) {
     title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
@@ -3124,6 +3348,7 @@ function aiOddEvenDecide() {
 
 function revealOddEvenJudge(challenger) {
   gamePhase = 'revealing';
+  SFX.open(); // P0② 开盅音
   renderDice();
 
   const allDice = [...playerDice, ...computerDice];
@@ -3142,6 +3367,8 @@ function revealOddEvenJudge(challenger) {
     detail += `\n叫点成立！`;
     winner = challenger === 0 ? 1 : 0;
   }
+  // P0⑤⑥ 结算钩子（单双连中递增赔付在 onSettle 内处理）
+  detail += onSettle(winner, { challenger: challenger });
 
   if (winner === 0) {
     title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
@@ -3326,6 +3553,7 @@ function canFormStraight(normalDice, wildCount, start, len) {
 
 function revealStraightJudge(challenger) {
   gamePhase = 'revealing';
+  SFX.open(); // P0② 开盅音
   renderDice();
   
   const len = currentBid.len;
@@ -3348,6 +3576,8 @@ function revealStraightJudge(challenger) {
     winner = challenger;
     detail += '\n吹牛被识破！';
   }
+  // P0⑤⑥ 结算钩子（顺子胜局 ×10 赔付在 onSettle 内处理）
+  detail += onSettle(winner, { challenger: challenger });
   
   if (winner === 0) {
     title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
@@ -3455,6 +3685,7 @@ function aiRedBlueDecide() {
 
 function revealRedBlueJudge(challenger) {
   gamePhase = 'revealing';
+  SFX.open(); // P0② 开盅音
   renderDice();
   
   const allDice = [...playerDice, ...computerDice];
@@ -3483,6 +3714,8 @@ function revealRedBlueJudge(challenger) {
     detail += `\n叫点成立！`;
     winner = challenger === 0 ? 1 : 0; // 叫点的人赢
   }
+  // P0⑤⑥ 结算钩子（红蓝分层赔付在 onSettle 内处理）
+  detail += onSettle(winner, { challenger: challenger, actualRed: actualRed, actualBlue: actualBlue, bidRed: currentBid.red, bidBlue: currentBid.blue });
 
   if (winner === 0) {
     title = '🎉 你赢了！';
@@ -3517,9 +3750,13 @@ function revealRedBlueJudge(challenger) {
 function computerTurn() {
   if (gamePhase !== 'bidding' || currentTurn !== 1) return;
 
-  // AI策略
+  // AI策略（P0④ 二项分布胜率模型）
   const result = aiDecide();
   updateUI();
+
+  // P0④ 思考延迟三轴联动：按难度档随机
+  const L = LIAR_AI_LEVELS[effectiveLiarLevel()] || LIAR_AI_LEVELS.normal;
+  const thinkDelay = L.delay[0] + Math.floor(Math.random() * (L.delay[1] - L.delay[0] + 1));
 
   setTimeout(() => {
     if (result.action === 'bid') {
@@ -3531,7 +3768,7 @@ function computerTurn() {
       // 开盅
       revealAndJudge(1); // 1=电脑开盅
     }
-  }, 800);
+  }, thinkDelay);
 }
 
 function aiDecide() {
@@ -3604,6 +3841,7 @@ function aiDecide() {
 // ============ 开盅结算 ============
 function revealAndJudge(challenger) {
   gamePhase = 'revealing';
+  SFX.open(); // P0② 开盅音
   renderDice();
 
   // 计算实际数量
@@ -3627,6 +3865,11 @@ function revealAndJudge(challenger) {
     detail += `\n叫点成立！`;
     winner = challenger === 0 ? 1 : 0; // 叫点的人赢
   }
+
+  // P0④ 大师频率修正素材（被开盅者是玩家的叫点才计入）
+  if (challenger === 1) { aiFreqTrack.called += bidCount; aiFreqTrack.actual += actualCount; aiFreqTrack.games++; }
+  // P0⑤⑥ 结算钩子
+  detail += onSettle(winner, { challenger: challenger });
 
   if (winner === 0) {
     title = '🎉 你赢了！';
@@ -3699,6 +3942,7 @@ const RULES_DATA = {
       { emoji: '1️⃣', text: '①=万能，可充当任何点数' },
       { emoji: '🔍', text: '不信可以开盅，双方亮骰验证' },
       { emoji: '✅', text: '实际数量≥叫点则叫点方赢，否则开盅方赢' },
+      { emoji: '💰', text: I18N.t('💰 赔付：胜局 ×1；含三同色彩金 +×2；押围骰(全场同点)中 +×35') },
     ]
   },
   red: {
@@ -3711,6 +3955,7 @@ const RULES_DATA = {
       { emoji: '⬆️', text: '叫点须大于上家' },
       { emoji: '🔍', text: '不信可以开盅，验证双方总分' },
       { emoji: '✅', text: '实际≥叫点则叫点方赢，否则开盅方赢' },
+      { emoji: '💰', text: I18N.t('💰 赔付：红骰≥7 ×4.5 · 全红(10红) ×200 · 其余 ×1.8') },
     ]
   },
   redblue: {
@@ -3722,6 +3967,7 @@ const RULES_DATA = {
       { emoji: '⬆️', text: '叫点须至少一项大于上家' },
       { emoji: '🔍', text: '不信可以开盅，验证红蓝是否够数' },
       { emoji: '✅', text: '实际红/蓝≥叫点则叫点方赢，否则开盅方赢' },
+      { emoji: '💰', text: I18N.t('💰 赔付：精确 ×20 · 差一 ×3 · 差二回本 ×1') },
     ]
   },
   bigsmall: {
@@ -3734,6 +3980,7 @@ const RULES_DATA = {
       { emoji: '⬆️', text: '叫点须至少一项大于上家' },
       { emoji: '🔍', text: '不信可以开盅，验证大小是否够数' },
       { emoji: '✅', text: '实际小/大≥叫点则叫点方赢，否则开盅方赢' },
+      { emoji: '💰', text: I18N.t('💰 赔付：胜局 ×1；含三同色彩金 +×2；押围骰(全场同点)中 +×35') },
     ]
   },
   oddeven: {
@@ -3746,6 +3993,7 @@ const RULES_DATA = {
       { emoji: '⬆️', text: '叫点须至少一项大于上家' },
       { emoji: '🔍', text: '不信可以开盅，验证单双是否够数' },
       { emoji: '✅', text: '实际单/双≥叫点则叫点方赢，否则开盅方赢' },
+      { emoji: '💰', text: I18N.t('💰 赔付：连中递增 ×1→×1.5→×2 封顶') },
     ]
   },
   straight: {
@@ -3758,6 +4006,7 @@ const RULES_DATA = {
       { emoji: '📢', text: '叫长度，如叫"123"（长度3），下家须叫更大（长度4+）' },
       { emoji: '🔍', text: '开盅验证双方骰子能否组成该顺子' },
       { emoji: '💡', text: '例：双方骰子能组成1234则叫"12345"（长度5）失败' },
+      { emoji: '💰', text: I18N.t('💰 赔付：胜局 ×10') },
     ]
   }
 };
@@ -4153,8 +4402,14 @@ function mpStartGame() {
   
   // 联机模式：对手名称改为"好友"
   document.querySelector('#computerZone .player-name').textContent = I18N.t('好友');
-  const scoreItem = document.querySelector('#computerWins').parentElement;
-  scoreItem.innerHTML = '<div class="score-dot c"></div> ' + I18N.t('好友') + ' <span id="computerWins">0</span> ' + I18N.t('胜') + '';
+  // P0⑤ 兼容：重建整个 scoreboard（含连胜章/生涯行），不再 innerHTML 直写覆盖兄弟节点
+  const scoreBoard = document.getElementById('scoreBoard');
+  if (scoreBoard) {
+    scoreBoard.innerHTML = '<div class="score-item"><div class="score-dot p"></div> ' + I18N.t('你') + ' <span id="playerWins">0</span> ' + I18N.t('胜') + '</div>'
+      + '<div class="score-item"><div class="score-dot c"></div> ' + I18N.t('好友') + ' <span id="computerWins">0</span> ' + I18N.t('胜') + '</div>';
+  }
+  updateStreakChip();
+  updateCareerLine();
   
   // 关闭封面，进入游戏
   document.getElementById('coverPage').classList.add('hidden');
@@ -4376,6 +4631,606 @@ function mpStartSingle() {
   }, 500);
 }
 
+// ============================================================
+// ============ P0 优化运行时（存储桥/音效/特效/赔付/AI）============
+// ============================================================
+
+// ============ DICE-SAVE v1 postMessage 存储桥（P0①）============
+// opaque iframe（sandbox 无 allow-same-origin）内 localStorage 抛 SecurityError，
+// 持久化唯一正道：外层宿主(client.js)监听 message 并用宿主页 localStorage 代存。
+// 降级链路：iframe内 LS 直测 → 宿主桥 → 内存态＋UI提示「进度不保存」。
+const DiceStore = {
+  KEYS: ['dice_lang', 'dice_stats', 'dice_muted', 'dice_streak', 'dice_tasks', 'dice_ai_level', 'dice_fx'],
+  CRITICAL: ['dice_lang', 'dice_muted', 'dice_fx', 'dice_ai_level'], // 即时写，其余 3s 防抖合并
+  CH: 'DICE-SAVE',
+  VER: 1,
+  mode: 'boot',          // 'ls' | 'pm' | 'mem'
+  readyFlag: false,
+  reqId: 1,
+  pendingGets: new Map(),   // req -> fn(val)
+  helloTries: 0,
+  data: {},              // 内存权威缓存
+  dirtyKeys: new Set(),
+  debounceTimer: null,
+  onReadyCbs: [],
+
+  allowed(key) { return this.KEYS.indexOf(key) !== -1 && key.indexOf('dice_') === 0; },
+
+  lsAvailable() {
+    try {
+      localStorage.setItem('__dice_probe', '1');
+      localStorage.removeItem('__dice_probe');
+      return true;
+    } catch (e) { return false; }
+  },
+
+  init() {
+    window.addEventListener('message', (ev) => this.onHostMsg(ev));
+    if (this.lsAvailable()) {
+      this.mode = 'ls';
+      this.markReady();
+    } else if (window.parent && window.parent !== window) {
+      this.mode = 'pm';
+      this.sendHello();
+    } else {
+      this.mode = 'mem';
+      this.markReady();
+      this.showVolatileHint();
+    }
+  },
+
+  sendHello() {
+    const req = 'r' + (this.reqId++);
+    try {
+      window.parent.postMessage({ v: this.VER, ch: this.CH, cmd: 'hello', req: req }, '*');
+    } catch (e) { /* ignore */ }
+    setTimeout(() => {
+      if (this.readyFlag) return;
+      this.helloTries++;
+      if (this.helloTries <= 3) this.sendHello();
+      else { this.mode = 'mem'; this.markReady(); this.showVolatileHint(); }
+    }, 250);
+  },
+
+  onHostMsg(ev) {
+    // 只认父窗口回包（standalone 时 parent===window，忽略自消息）
+    if (!window.parent || window.parent === window) return;
+    if (ev.source !== window.parent) return;
+    var d = ev.data;
+    if (!d || typeof d !== 'object' || d.ch !== this.CH || d.v !== this.VER) return;
+    if (d.cmd === 'ready' && !this.readyFlag) {
+      this.mode = 'pm';
+      this.markReady();
+      return;
+    }
+    var cb = d.req ? this.pendingGets.get(d.req) : null;
+    if (!cb) return;
+    this.pendingGets.delete(d.req);
+    try { cb(d); } catch (e) { /* 回调异常不外泄 */ }
+  },
+
+  markReady() {
+    if (this.readyFlag) return;
+    this.readyFlag = true;
+    var self = this;
+    this.hydrate().then(function () {
+      var cbs = self.onReadyCbs.splice(0);
+      for (var i = 0; i < cbs.length; i++) { try { cbs[i](); } catch (e) {} }
+    });
+  },
+
+  onReady(cb) { if (this.readyFlag) cb(); else this.onReadyCbs.push(cb); },
+
+  rawGet(key) {
+    // Promise<string|null>，返回 JSON 文本
+    if (this.mode === 'ls') {
+      return new Promise(function (res) { try { res(localStorage.getItem(key)); } catch (e) { res(null); } });
+    }
+    if (this.mode === 'pm') {
+      var self2 = this;
+      return new Promise(function (res) {
+        var req = 'r' + self2.reqId++;
+        var timer = setTimeout(function () {
+          if (self2.pendingGets.has(req)) { self2.pendingGets.delete(req); res(null); }
+        }, 800);
+        self2.pendingGets.set(req, function (d) {
+          clearTimeout(timer);
+          res(typeof d.json === 'string' ? d.json : null);
+        });
+        try { window.parent.postMessage({ v: self2.VER, ch: self2.CH, cmd: 'dice-get', key: key, req: req }, '*'); }
+        catch (e) { clearTimeout(timer); self2.pendingGets.delete(req); res(null); }
+      });
+    }
+    return Promise.resolve(Object.prototype.hasOwnProperty.call(this.data, key) ? JSON.stringify(this.data[key]) : null);
+  },
+
+  rawSet(key, json) {
+    if (this.mode === 'ls') { try { localStorage.setItem(key, json); } catch (e) {} }
+    else if (this.mode === 'pm') {
+      var req = 'r' + (this.reqId++);
+      try { window.parent.postMessage({ v: this.VER, ch: this.CH, cmd: 'dice-set', key: key, json: json, req: req }, '*'); } catch (e) {}
+    }
+  },
+
+  async hydrate() {
+    for (var i = 0; i < this.KEYS.length; i++) {
+      var key = this.KEYS[i];
+      try {
+        var raw = await this.rawGet(key);
+        // 旧版迁移：独立打开时语言曾存 diceGameLang
+        if (key === 'dice_lang' && (raw === null || raw === undefined)) {
+          try {
+            var legacy = localStorage.getItem('diceGameLang');
+            if (legacy === 'en' || legacy === 'zh') raw = JSON.stringify(legacy);
+          } catch (e) {}
+        }
+        if (typeof raw === 'string') {
+          var val = JSON.parse(raw);
+          if (val !== null && val !== undefined) this.data[key] = val;
+        }
+      } catch (e) { /* 单键损坏不拖垮整体 */ }
+    }
+  },
+
+  get(key, fallbackVal) {
+    var v = this.data[key];
+    return v === undefined ? fallbackVal : v;
+  },
+
+  set(key, val) {
+    if (!this.allowed(key)) return;
+    this.data[key] = val;
+    if (this.CRITICAL.indexOf(key) !== -1) { this.flushKey(key); return; }
+    this.dirtyKeys.add(key);
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    var self = this;
+    this.debounceTimer = setTimeout(function () { self.flushDirty(); }, 3000);
+  },
+
+  flushDirty() {
+    var ks = Array.from(this.dirtyKeys);
+    this.dirtyKeys.clear();
+    for (var i = 0; i < ks.length; i++) this.flushKey(ks[i]);
+  },
+  flushKey(key) {
+    if (!Object.prototype.hasOwnProperty.call(this.data, key)) return;
+    try { this.rawSet(key, JSON.stringify(this.data[key])); } catch (e) {}
+  },
+  showVolatileHint() {
+    setTimeout(function () { showToast('⚠️ ' + I18N.t('进度暂不保存（独立浏览模式）')); }, 600);
+  },
+};
+
+// ============ Web Audio 合成音效三件套（P0②）============
+// 掷骰=带通滤波白噪80ms；开盅=click+上扬双音；胜=大三和弦琶音；负=下行小三度。
+// 零素材；首次用户手势 resume()；静音写持久化键 dice_muted。
+const SFX = {
+  ctx: null,
+  muted: false,
+  ensure() {
+    try {
+      if (!this.ctx) {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        this.ctx = new AC();
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      return this.ctx;
+    } catch (e) { return null; }
+  },
+  envGain(t0, peak, dur) {
+    var g = this.ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.008);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    g.connect(this.ctx.destination);
+    return g;
+  },
+  tone(freq, t0, dur, type, peak) {
+    var o = this.ctx.createOscillator();
+    o.type = type || 'sine';
+    o.frequency.setValueAtTime(freq, t0);
+    o.connect(this.envGain(t0, peak || 0.16, dur));
+    o.start(t0); o.stop(t0 + dur + 0.05);
+  },
+  roll() {
+    if (this.muted) return;
+    var c = this.ensure(); if (!c) return;
+    try {
+      var t0 = c.currentTime;
+      var len = Math.floor(c.sampleRate * 0.08); // 80ms 白噪
+      var buf = c.createBuffer(1, len, c.sampleRate);
+      var ch = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) ch[i] = Math.random() * 2 - 1;
+      var src = c.createBufferSource(); src.buffer = buf;
+      var bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 1.1;
+      src.connect(bp); bp.connect(this.envGain(t0, 0.22, 0.08));
+      src.start(t0);
+    } catch (e) {}
+  },
+  open() {
+    if (this.muted) return;
+    var c = this.ensure(); if (!c) return;
+    try {
+      var t0 = c.currentTime;
+      var o = c.createOscillator(); o.type = 'square'; o.frequency.setValueAtTime(2400, t0);
+      o.connect(this.envGain(t0, 0.12, 0.03)); o.start(t0); o.stop(t0 + 0.06); // click
+      this.tone(660, t0 + 0.05, 0.09, 'sine', 0.14);   // 上扬双音
+      this.tone(990, t0 + 0.13, 0.12, 'sine', 0.15);
+    } catch (e) {}
+  },
+  win() {
+    if (this.muted) return;
+    var c = this.ensure(); if (!c) return;
+    try {
+      var t0 = c.currentTime;
+      var seq = [523.25, 659.25, 783.99, 1046.5]; // 大三和弦琶音
+      for (var i = 0; i < seq.length; i++) this.tone(seq[i], t0 + i * 0.09, 0.16, 'triangle', 0.15);
+    } catch (e) {}
+  },
+  lose() {
+    if (this.muted) return;
+    var c = this.ensure(); if (!c) return;
+    try {
+      var t0 = c.currentTime;
+      this.tone(440, t0, 0.18, 'sawtooth', 0.07);       // 下行小三度
+      this.tone(349.23, t0 + 0.16, 0.26, 'sawtooth', 0.07);
+    } catch (e) {}
+  },
+};
+
+// 首次用户手势 resume 音频上下文
+document.addEventListener('pointerdown', function () { SFX.ensure(); }, { capture: true });
+
+// ============ Confetti ＋ 震屏三档（P0③）============
+const FX = {
+  enabled: true,
+  confetti(gold) {
+    if (!this.enabled) return;
+    try {
+      var layer = document.createElement('div');
+      layer.className = 'confetti-layer';
+      var palette = gold
+        ? ['#fbbf24', '#f59e0b', '#fde68a', '#d97706', '#fef3c7']
+        : ['#60a5fa', '#a78bfa', '#f472b6', '#34d399', '#fbbf24'];
+      var parts = [];
+      for (var i = 0; i < 60; i++) {
+        var el = document.createElement('div');
+        el.className = 'confetti-bit';
+        el.style.background = palette[i % palette.length];
+        el.style.left = Math.random() * 100 + '%';
+        layer.appendChild(el);
+        parts.push({
+          el: el,
+          y: -20 - Math.random() * 120,
+          vy: 2.2 + Math.random() * 2.3,
+          vx: (Math.random() - 0.5) * 2.4,
+          rot: Math.random() * 360,
+          vr: (Math.random() - 0.5) * 14,
+        });
+      }
+      document.body.appendChild(layer);
+      var t0 = performance.now();
+      var DUR = 800;
+      var step = function (now) {
+        var t = now - t0;
+        if (t >= DUR || !layer.isConnected) { layer.remove(); return; }
+        var fade = t > DUR - 220 ? (DUR - t) / 220 : 1;
+        for (var j = 0; j < parts.length; j++) {
+          var p = parts[j];
+          p.y += p.vy; p.rot += p.vr;
+          p.el.style.opacity = String(fade);
+          p.el.style.transform = 'translate3d(' + (p.vx * t / 100) + 'px,' + p.y + 'px,0) rotate(' + p.rot + 'deg)';
+        }
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    } catch (e) {}
+  },
+  shake(level) {
+    if (!this.enabled) return;
+    try {
+      var area = document.querySelector('.game-area');
+      if (!area) return;
+      area.classList.remove('shake-s', 'shake-m', 'shake-l');
+      void area.offsetWidth; // 重排重启动画
+      area.classList.add(level);
+      setTimeout(function () { area.classList.remove(level); }, 650);
+    } catch (e) {}
+  },
+};
+
+// ============ 轻提示 toast ============
+var toastWrapEl = null;
+function showToast(msg, ms) {
+  try {
+    if (!toastWrapEl) {
+      toastWrapEl = document.createElement('div');
+      toastWrapEl.className = 'dice-toast-wrap';
+      document.body.appendChild(toastWrapEl);
+    }
+    var el = document.createElement('div');
+    el.className = 'dice-toast';
+    el.textContent = msg;
+    toastWrapEl.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('show'); });
+    setTimeout(function () {
+      el.classList.remove('show');
+      setTimeout(function () { el.remove(); }, 300);
+    }, ms || 2600);
+  } catch (e) {}
+};
+
+// ============ 连胜🔥称号（P0⑤）============
+// 见习赌徒(0-2)→桌面常客(3-5)→老千(6-8)→骰神(9+)，每 3 连升档提示。
+const TITLE_LADDER = [
+  { min: 0, zh: '见习赌徒', en: 'Rookie Gambler' },
+  { min: 3, zh: '桌面常客', en: 'Table Regular' },
+  { min: 6, zh: '老千', en: 'Sharp Operator' },
+  { min: 9, zh: '骰神', en: 'Dice Deity' },
+];
+let winStreak = 0;
+let loseStreak = 0;
+let bestStreak = 0;
+let loseProtectArmed = false; // 3 连败后待触发
+let loseProtectActive = false; // 本局降档保护进行中
+let curTitleIdx = 0;
+
+function titleIndexFor(streak) {
+  var idx = 0;
+  for (var i = 0; i < TITLE_LADDER.length; i++) { if (streak >= TITLE_LADDER[i].min) idx = i; }
+  return idx;
+}
+function titleName(idx) { return I18N.lang === 'en' ? TITLE_LADDER[idx].en : TITLE_LADDER[idx].zh; }
+
+function registerWin(streakGain) {
+  winStreak += (streakGain || 1);
+  loseStreak = 0;
+  loseProtectArmed = false;
+  loseProtectActive = false;
+  if (winStreak > bestStreak) bestStreak = winStreak;
+  var idx = titleIndexFor(winStreak);
+  if (idx > curTitleIdx) {
+    curTitleIdx = idx;
+    showToast('🔥 ' + I18N.t('{n}连胜！称号升级：{t}', { n: winStreak, t: titleName(idx) }));
+  }
+}
+function registerLoss() {
+  winStreak = 0;
+  loseStreak++;
+  if (loseStreak >= 3 && !loseProtectArmed && !loseProtectActive) {
+    loseProtectArmed = true;
+    showToast('🛡️ ' + I18N.t('连败保护：下一局 AI 自动降档，赢下即回升'), 3200);
+  }
+}
+function persistStreakStats() {
+  var st = DiceStore.get('dice_streak', {}) || {};
+  st.win = winStreak; st.lose = loseStreak; st.best = Math.max(bestStreak, st.best || 0);
+  DiceStore.set('dice_streak', st);
+  var stats = DiceStore.get('dice_stats', {}) || {};
+  stats.bestStreak = Math.max(stats.bestStreak || 0, bestStreak);
+  DiceStore.set('dice_stats', stats);
+}
+function updateStreakChip() {
+  var chip = document.getElementById('streakChip');
+  if (!chip) return;
+  if (winStreak > 0) {
+    chip.innerHTML = '<span class="flame">🔥</span>' + I18N.t('{n}连胜', { n: winStreak }) + ' · ' + titleName(curTitleIdx);
+    chip.classList.toggle('hot', winStreak >= 3);
+  } else {
+    chip.textContent = titleName(curTitleIdx);
+    chip.classList.remove('hot');
+  }
+}
+function updateCareerLine() {
+  var line = document.getElementById('careerLine');
+  if (!line) return;
+  var s = DiceStore.get('dice_stats', {}) || {};
+  var w = s.wins || 0, l = s.losses || 0, c = s.coins || 0;
+  line.textContent = I18N.t('生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}', { w: w, l: l, c: c, b: Math.max(bestStreak, s.bestStreak || 0) });
+}
+
+// ============ 赔付表（P0⑥，方案 §1.2 倍数落地）============
+// 基注 STAKE 骰币；倍数为方案建议实付值（[PLACEHOLDER]，蒙特卡洛校验属后续轮）。
+// 十骰场适配：红点分档按全场红骰数(①④为红)；围骰彩金=任一点数≥3颗；
+// 围骰押项=全场同点(长尾彩票钩子)；红蓝分层按叫点与实际差值。
+const STAKE = 10;
+const PAYOUT_TABLE = {
+  liar:     { winMult: 1 },
+  bigsmall: { winMult: 1, tripleBonusMult: 2, tripleSideBetMult: 35 },
+  oddeven:  { ladderMults: [1, 1.5, 2] },            // 连中递增封顶
+  straight: { winMult: 10 },
+  red:      { tiers: [{ minRed: 10, mult: 200 }, { minRed: 7, mult: 4.5 }, { minRed: 0, mult: 1.8 }] },
+  redblue:  { exactMult: 20, offByOneMult: 3, offByTwoMult: 1, baseMult: 1 },
+};
+let oddevenWinChain = 0; // 单双连中链
+
+function maxSameFace(dice) {
+  var h = {};
+  for (var i = 0; i < dice.length; i++) h[dice[i]] = (h[dice[i]] || 0) + 1;
+  var mx = 0;
+  for (var k in h) if (h[k] > mx) mx = h[k];
+  return mx;
+}
+
+/**
+ * 结算钩子：六玩法判定函数在 winner 确定后调用。
+ * @param {number} winner 0=玩家胜 1=电脑胜
+ * @param {object} ctx 各玩法结算上下文（allDice/redDice/actualRed…）
+ * @returns {string} 追加到结算弹窗 detail 的赔付文案（可为空串）
+ */
+function onSettle(winner, ctx) {
+  ctx = ctx || {};
+  var extra = '';
+  var isMp = (typeof mpGameActive !== 'undefined') && mpGameActive === true;
+
+  if (winner === 0 && !isMp) {
+    // —— 连败保护首胜双倍计数 ——
+    var gain = loseProtectActive ? 2 : 1;
+    if (loseProtectActive) showToast('🛡️ ' + I18N.t('保护局获胜！连胜 +2'), 2800);
+    registerWin(gain);
+    persistStreakStats();
+
+    // —— 赔付计算 ——
+    var T = PAYOUT_TABLE[gameMode] || { winMult: 1 };
+    var mult = 1, reason = '';
+    if (gameMode === 'bigsmall') {
+      var all = ctx.allDice || [];
+      mult = T.winMult;
+      if (all.length && maxSameFace(all) >= 3) { mult += T.tripleBonusMult; reason = I18N.t('围骰彩金'); }
+      var side = document.getElementById('bigSmallTripleBet');
+      if (side && side.checked) {
+        side.checked = false;
+        if (all.length && all.every(function (v) { return v === all[0]; })) {
+          mult += T.tripleSideBetMult;
+          reason = I18N.t('🎯 围骰押中！');
+          FX.shake('shake-l');
+        }
+      }
+    } else if (gameMode === 'oddeven') {
+      oddevenWinChain++;
+      var li = Math.min(oddevenWinChain - 1, T.ladderMults.length - 1);
+      mult = T.ladderMults[li];
+      if (li > 0) reason = I18N.t('连中×{n}', { n: oddevenWinChain });
+    } else if (gameMode === 'straight') {
+      mult = T.winMult;
+    } else if (gameMode === 'red') {
+      var rd = ctx.redDice || 0;
+      mult = 1;
+      for (var ti = 0; ti < T.tiers.length; ti++) {
+        if (rd >= T.tiers[ti].minRed) { mult = T.tiers[ti].mult; break; }
+      }
+      if (mult >= 200) { reason = I18N.t('全红头奖！'); FX.shake('shake-l'); }
+      else if (mult >= 4.5) reason = I18N.t('高红档');
+    } else if (gameMode === 'redblue') {
+      var dR = Math.abs((ctx.actualRed || 0) - (ctx.bidRed || 0));
+      var dB = Math.abs((ctx.actualBlue || 0) - (ctx.bidBlue || 0));
+      var diff = dR + dB;
+      mult = diff === 0 ? T.exactMult : (diff === 1 ? T.offByOneMult : (diff === 2 ? T.offByTwoMult : T.baseMult));
+      if (diff === 0) { reason = I18N.t('精确命中！'); FX.shake('shake-l'); }
+      else if (diff === 2) reason = I18N.t('差二回本');
+    }
+
+    var gainCoins = Math.round(STAKE * mult);
+    var stats = DiceStore.get('dice_stats', {}) || {};
+    stats.wins = (stats.wins || 0) + 1;
+    stats.coins = (stats.coins || 0) + gainCoins;
+    DiceStore.set('dice_stats', stats);
+
+    if (reason) extra += '\n💰 ' + reason + ' ';
+    extra += '\n💰 ' + I18N.t('彩金 ×{m}：+{g} 骰币（累计 {c}）', { m: mult, g: gainCoins, c: stats.coins });
+
+    // —— 反馈 juice ——
+    FX.confetti(winStreak >= 3 || mult >= 10);
+    FX.shake(mult >= 10 ? 'shake-l' : 'shake-s');
+    SFX.win();
+  } else if (winner !== 0) {
+    if (!isMp) {
+      registerLoss();
+      persistStreakStats();
+      var stats2 = DiceStore.get('dice_stats', {}) || {};
+      stats2.losses = (stats2.losses || 0) + 1;
+      DiceStore.set('dice_stats', stats2);
+    }
+    if (gameMode === 'oddeven') oddevenWinChain = 0;
+    // 震屏分级：失败小、挑战失败中（玩家主动开盅却输）
+    FX.shake(ctx.challenger === 0 ? 'shake-m' : 'shake-s');
+    SFX.lose();
+  }
+  updateCareerLine();
+  updateStreakChip();
+  return extra;
+}
+
+// ============ 吹牛 AI 二项分布胜率模型（P0④）============
+// 已核实规则源码 countAllDice：①为万能 → 非①面单骰命中率 q=2/6=1/3，叫①时 q=1/6。
+// 场上未开盅骰数 m = 10 − 自己 5 = 5。pTrue = P(Binom(m,q) ≥ 叫点−自己持有数)。
+const LIAR_AI_LEVELS = {
+  rookie: { theta: 0.28, bluff: 0.05, noise: 2,  delay: [900, 1600], freqFix: false }, // 新手
+  normal: { theta: 0.42, bluff: 0.12, noise: 1,  delay: [700, 1500], freqFix: false }, // 普通
+  master: { theta: 0.55, bluff: 0.08, noise: -1, delay: [500, 1200], freqFix: true },  // 大师（noise<0 ⇒ 0~1）
+};
+let liarLevel = 'normal';
+// 大师档频率修正素材：玩家历史叫点总和 vs 开盅实际总和
+var aiFreqTrack = { called: 0, actual: 0, games: 0 };
+
+function effectiveLiarLevel() {
+  if (loseProtectActive) {
+    var order = ['rookie', 'normal', 'master'];
+    var i = order.indexOf(liarLevel);
+    return order[Math.max(0, i - 1)];
+  }
+  return liarLevel;
+}
+
+/** P(Binom(m, q) ≥ k)，k≤0 时为 1 */
+function binomTail(m, q, k) {
+  if (k <= 0) return 1;
+  if (k > m) return 0;
+  var comb = 1;
+  var sum = 0;
+  for (var i = 0; i <= m; i++) {
+    if (i > 0) { comb = comb * (m - i + 1) / i; }
+    if (i >= k) sum += comb * Math.pow(q, i) * Math.pow(1 - q, m - i);
+  }
+  return Math.min(1, sum);
+}
+
+function aiNoise(level) {
+  var nz = level.noise;
+  if (nz < 0) return Math.floor(Math.random() * 2);           // 大师 0~1
+  return Math.floor(Math.random() * (2 * nz + 1)) - nz;       // ±nz 整数均匀
+}
+
+function aiDecide() {
+  var myDice = computerDice;
+  var cnt = {};
+  for (var v = 1; v <= 6; v++) cnt[v] = myDice.filter(function (d) { return d === v; }).length;
+  var L = LIAR_AI_LEVELS[effectiveLiarLevel()] || LIAR_AI_LEVELS.normal;
+  var m = DICE_PER_PLAYER;                 // 对手隐藏骰数 5
+  var totalCap = DICE_PER_PLAYER * 2;      // 全场 10 骰上限
+  var qOf = function (face) { return face === 1 ? 1 / 6 : 1 / 3; };
+
+  // 无叫点：开局选自己最可辩护的面（持有+万能），期望+噪声
+  if (!currentBid) {
+    var best = 2, bestScore = -1;
+    for (var v2 = 2; v2 <= 6; v2++) {
+      var sc = cnt[v2] + cnt[1];
+      if (sc > bestScore) { bestScore = sc; best = v2; }
+    }
+    var n0 = Math.ceil(bestScore + m * qOf(best)) + aiNoise(L);
+    n0 = Math.max(1, Math.min(totalCap, n0));
+    return { action: 'bid', count: n0, value: best };
+  }
+
+  // —— 胜率模型评估上家叫点 ——
+  var face = currentBid.value;
+  var owned = face === 1 ? cnt[1] : cnt[face] + cnt[1];
+  var need = currentBid.count - owned;
+  var effTheta = L.theta;
+  if (L.freqFix && aiFreqTrack.games >= 3) {
+    // 统计玩家历史叫点偏差做频率修正：惯吹 → 更敢开盅
+    var overcall = (aiFreqTrack.called - aiFreqTrack.actual) / aiFreqTrack.games;
+    effTheta = Math.max(0.46, Math.min(0.62, L.theta + overcall * 0.05));
+  }
+  var pTrue = binomTail(m, qOf(face), need);
+  if (pTrue < effTheta) return { action: 'challenge' };
+
+  // —— 选择期望可辩护最高的面 ——
+  var ranked = [];
+  for (var v3 = 2; v3 <= 6; v3++) ranked.push({ v: v3, s: cnt[v3] + cnt[1] });
+  ranked.sort(function (x, y) { return y.s - x.s; });
+  var bestFace = ranked[0].v;
+  var secondFace = ranked[1] ? ranked[1].v : ranked[0].v;
+  var n = Math.ceil(ranked[0].s + m * qOf(bestFace)) + aiNoise(L);
+
+  // 偶发诈唬保人味：大师仅低成本时机（当前叫点 ≤4）
+  var bluffOk = (liarLevel === 'master') ? currentBid.count <= 4 : true;
+  if (bluffOk && Math.random() < L.bluff && currentBid.count + 1 <= totalCap) {
+    return { action: 'bid', count: currentBid.count + 1, value: secondFace };
+  }
+  return { action: 'bid', count: Math.min(totalCap, Math.max(currentBid.count + 1, n)), value: bestFace };
+}
 // ============ 初始化 ============
 straightLen = 2;
 createParticles();
@@ -4393,6 +5248,91 @@ I18N.applyToDom();
 
 // 猜顺子默认选中长度2
 document.querySelector('#straightLenGroup [data-val="2"]')?.classList.add('active');
+
+// ============ P0① 存储桥启动 ＋ 偏好水合 ============
+// 音效/特效开关按钮（语言按钮下方堆叠）
+function injectFxButtons() {
+  const mkBtn = (id, titleKey) => {
+    const b = document.createElement('button');
+    b.id = id;
+    b.style.cssText = 'position:fixed;right:14px;z-index:9999;width:34px;height:28px;border-radius:16px;border:1px solid rgba(167,139,250,.5);background:rgba(0,0,0,.45);color:#c4b5fd;font-size:13px;cursor:pointer;backdrop-filter:blur(4px);line-height:1;';
+    b.setAttribute('data-i18n-title', titleKey);
+    document.body.appendChild(b);
+    return b;
+  };
+  const soundBtn = mkBtn('diceSoundBtn', '音效开关');
+  const fxBtn = mkBtn('diceFxBtn', '特效开关');
+  fxBtn.style.top = '52px';
+  soundBtn.style.top = '86px';
+  const paintSound = () => { soundBtn.textContent = SFX.muted ? '🔇' : '🔊'; soundBtn.title = I18N.t('音效开关'); };
+  const paintFx = () => { fxBtn.textContent = FX.enabled ? '✨' : '💤'; fxBtn.style.opacity = FX.enabled ? '1' : '0.55'; fxBtn.title = I18N.t('特效开关'); };
+  soundBtn.addEventListener('click', () => {
+    SFX.muted = !SFX.muted;
+    DiceStore.set('dice_muted', SFX.muted);
+    paintSound();
+    if (!SFX.muted) SFX.open(); // 开启时给一声反馈
+  });
+  fxBtn.addEventListener('click', () => {
+    FX.enabled = !FX.enabled;
+    DiceStore.set('dice_fx', FX.enabled);
+    paintFx();
+  });
+  paintSound();
+  paintFx();
+}
+injectFxButtons();
+
+// 吹牛 AI 难度选择器（P0④）
+function syncAiLevelBtns() {
+  document.querySelectorAll('#aiLevelGroup .ai-level-btn').forEach(b => b.classList.toggle('active', b.dataset.level === liarLevel));
+}
+document.getElementById('aiLevelGroup').addEventListener('click', (e) => {
+  const btn = e.target.closest('.ai-level-btn');
+  if (!btn) return;
+  liarLevel = btn.dataset.level;
+  syncAiLevelBtns();
+  DiceStore.set('dice_ai_level', liarLevel);
+  showToast('🤖 ' + I18N.t(liarLevel === 'rookie' ? '新手' : (liarLevel === 'master' ? '大师' : '普通')));
+});
+
+DiceStore.init();
+DiceStore.onReady(() => {
+  // 语言
+  const lang = DiceStore.get('dice_lang');
+  if ((lang === 'en' || lang === 'zh') && I18N.lang !== lang) {
+    I18N.lang = lang;
+    I18N.applyToDom();
+  }
+  // 音效/特效偏好
+  SFX.muted = DiceStore.get('dice_muted', false) === true;
+  FX.enabled = DiceStore.get('dice_fx', true) !== false;
+  const sb = document.getElementById('diceSoundBtn');
+  const fb = document.getElementById('diceFxBtn');
+  if (sb) { sb.textContent = SFX.muted ? '🔇' : '🔊'; }
+  if (fb) { fb.textContent = FX.enabled ? '✨' : '💤'; fb.style.opacity = FX.enabled ? '1' : '0.55'; }
+  // AI 难度
+  const lvl = DiceStore.get('dice_ai_level');
+  if (lvl && LIAR_AI_LEVELS[lvl]) { liarLevel = lvl; syncAiLevelBtns(); }
+  // 连胜/称号恢复
+  const st = DiceStore.get('dice_streak') || {};
+  winStreak = st.win || 0;
+  loseStreak = st.lose || 0;
+  bestStreak = Math.max(bestStreak, st.best || 0);
+  curTitleIdx = titleIndexFor(winStreak);
+  updateUI(); // 刷新连胜章/生涯行/i18n 文案
+});
+
+// 关页前把防抖队列落盘
+window.addEventListener('pagehide', () => DiceStore.flushDirty());
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') DiceStore.flushDirty(); });
+
+// 大小模式围骰押项：每局重置
+const _origNewRound = newRound;
+newRound = function () {
+  const sideBet = document.getElementById('bigSmallTripleBet');
+  if (sideBet) sideBet.checked = false;
+  return _origNewRound.apply(this, arguments);
+};
 </script>
 </body>
 </html>
