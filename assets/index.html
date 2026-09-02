@@ -1350,13 +1350,106 @@
     .cover-mode-tags span { font-size: 0.7rem; padding: 5px 10px; }
   }
 
-  /* 响应式 */
-  @media (max-width: 380px) {
-    .dice { width: 50px; height: 50px; padding: 6px; }
-    .dice-row { gap: 8px; }
-    .num-btn { width: 32px; height: 32px; font-size: 0.85rem; }
-    .action-btn { padding: 10px 24px; font-size: 0.85rem; }
+  /* P1-8: 窄屏适配 */
+  @media (max-width: 480px) {
+    .dice { width: 44px; height: 44px; padding: 5px; }
+    .dice-row { gap: 6px; }
+    .num-btn { width: 30px; height: 30px; font-size: 0.8rem; }
+    .action-btn { padding: 8px 18px; font-size: 0.8rem; }
+    .modal-overlay { padding: 12px; }
+    .modal-content { padding: 16px; max-width: 95vw; }
+    .settings-panel { width: 240px; }
+    .task-capsule { font-size: 11px; padding: 3px 8px; }
+    .stats-fab, .settings-fab { width: 32px; height: 32px; font-size: 16px; }
+    .stats-fab { right: 52px; top: 12px; }
+    .settings-fab { right: 12px; top: 12px; }
+    .cover-title { font-size: 2.5rem; }
+    .cover-dice { font-size: 2.5rem; }
+    .cover-start-btn { padding: 12px 28px; font-size: 0.9rem; }
+    .game-tabs { font-size: 0.75rem; }
+    .game-tabs button { padding: 6px 8px; }
   }
+  @media (max-width: 360px) {
+    .dice { width: 38px; height: 38px; padding: 4px; }
+    .dice-row { gap: 4px; }
+    .num-btn { width: 28px; height: 28px; font-size: 0.75rem; }
+    .action-btn { padding: 6px 14px; font-size: 0.75rem; }
+    .settings-panel { width: 200px; }
+    .cover-title { font-size: 2rem; }
+  }
+
+  /* ── P1-7 生涯战绩面板 ── */
+  .stats-fab {
+    position: fixed; top: 14px; right: 56px; z-index: 999;
+    background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+    width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+  }
+  .stats-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.9); z-index: 1002; padding: 20px; overflow-y: auto;
+  }
+  .stats-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 20px; margin-bottom: 16px;
+  }
+  .stats-close { background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; }
+  .stats-content { max-width: 400px; margin: 0 auto; }
+  .stats-bar { display: flex; align-items: center; margin: 8px 0; }
+  .stats-bar-label { width: 80px; font-size: 13px; }
+  .stats-bar-fill {
+    height: 18px; border-radius: 9px;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    min-width: 20px; text-align: center; font-size: 11px; line-height: 18px; color: #fff;
+  }
+  .stats-bar-lose { background: linear-gradient(90deg, #e74c3c, #f44336); }
+
+  /* ── P1-6 设置抽屉 ── */
+  .settings-fab {
+    position: fixed; top: 14px; right: 14px; z-index: 1000;
+    background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
+    width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+  }
+  .settings-panel {
+    position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
+    background: #1a1a2e; color: #fff; z-index: 1001;
+    transition: right 0.3s ease; padding: 16px;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.5); overflow-y: auto;
+  }
+  .settings-panel.open { right: 0; }
+  .settings-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 18px; margin-bottom: 16px; border-bottom: 1px solid #333; padding-bottom: 8px;
+  }
+  .settings-close { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; }
+  .settings-body label { display: block; margin: 12px 0 4px; font-size: 14px; }
+  .settings-body select, .settings-body .settings-btn {
+    width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #444;
+    background: #16213e; color: #fff; margin: 4px 0 8px;
+  }
+  .settings-btn { cursor: pointer; background: #0f3460; }
+  .settings-btn.danger { background: #e74c3c; }
+
+  /* ── P1-4 任务胶囊 ── */
+  .task-capsule {
+    position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7); color: #fff; padding: 4px 12px;
+    border-radius: 12px; font-size: 12px; cursor: pointer;
+    z-index: 100; display: flex; align-items: center; gap: 6px;
+  }
+  .task-capsule .task-icon { font-size: 14px; }
+
+  .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background: #444; border-radius: 24px; transition: 0.3s;
+  }
+  .switch .slider:before {
+    content: ''; position: absolute; height: 18px; width: 18px;
+    left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s;
+  }
+  .switch input:checked + .slider { background: #4caf50; }
+  .switch input:checked + .slider:before { transform: translateX(20px); }
 </style>
   <!-- 联机模式库 -->
   <script src="peerjs.min.js"></script>
@@ -1817,6 +1910,7 @@ const I18N = {
       '{n}连胜！称号升级：{t}': '{n}连胜！称号升级：{t}',
       '{n}连胜': '{n}连胜',
       '连败保护：下一局 AI 自动降档，赢下即回升': '连败保护：下一局 AI 自动降档，赢下即回升',
+      '保护待命': '保护待命',
       '保护局获胜！连胜 +2': '保护局获胜！连胜 +2',
       '进度暂不保存（独立浏览模式）': '进度暂不保存（独立浏览模式）',
       '生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}': '生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}',
@@ -2019,6 +2113,55 @@ const I18N = {
       '创建失败': '创建失败',
       '连接失败': '连接失败',
       '胜': '胜',
+      // —— P1-7 生涯战绩面板 ——
+      '战绩': '战绩',
+      '最高连胜': '最高连胜',
+      '胜率': '胜率',
+      '总场次': '总场次',
+      '累计彩金': '累计彩金',
+      '当前称号': '当前称号',
+      '分战绩': '分战绩',
+      '大小': '大小',
+      '单双': '单双',
+      '顺子': '顺子',
+      '红蓝': '红蓝',
+      '称号墙': '称号墙',
+      '需{n}连胜': '需{n}连胜',
+      '设置': '设置',
+      '语言': '语言',
+      '音效': '音效',
+      '特效': '特效',
+      'AI 难度': 'AI 难度',
+      '新手': '新手',
+      '普通': '普通',
+      '大师': '大师',
+      '重置单双连中链': '重置单双连中链',
+      '清空生涯数据': '清空生涯数据',
+      '单双连中链已重置': '单双连中链已重置',
+      '确定清空所有生涯数据？': '确定清空所有生涯数据？',
+      '生涯数据已清空': '生涯数据已清空',
+      '每日任务': '每日任务',
+      '今日奖励': '今日奖励',
+      '任务完成！+{r} 骰币': '任务完成！+{r} 骰币',
+      '领取': '领取',
+      '奖励': '奖励',
+      '电脑赢了': '电脑赢了',
+      '吹牛被识破！': '吹牛被识破！',
+      '叫点成立！': '叫点成立！',
+      '你的红点：': '你的红点：',
+      '电脑红点：': '电脑红点：',
+      '你的骰子：': '你的骰子：',
+      '电脑骰子：': '电脑骰子：',
+      '已有的骰子：': '已有的骰子：',
+      '缺失的数字：': '缺失的数字：',
+      '万能1使用：': '万能1使用：',
+      '结果：顺子成立': '结果：顺子成立',
+      '结果：顺子不成立': '结果：顺子不成立',
+      '点': '点',
+      '红': '红',
+      '蓝': '蓝',
+      '个 (共': '个 (共',
+      '个)': '个)',
     },
     en: {
       '⚖️ 猜大小': '⚖️ Guess Big/Small',
@@ -2204,6 +2347,7 @@ const I18N = {
       '{n}连胜！称号升级：{t}': '{n}-win streak! Title up: {t}',
       '{n}连胜': '{n}-win streak',
       '连败保护：下一局 AI 自动降档，赢下即回升': 'Loss protection: AI drops a tier next round, win to recover',
+      '保护待命': 'Protection armed',
       '保护局获胜！连胜 +2': 'Protected win! Streak +2',
       '进度暂不保存（独立浏览模式）': 'Progress will not be saved (standalone mode)',
       '生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}': 'Career {w}W/{l}L · {c} coins · best 🔥{b}',
@@ -2227,6 +2371,55 @@ const I18N = {
       '💰 赔付：胜局 ×10': '💰 Payout: win ×10',
       '💰 赔付：红骰≥7 ×4.5 · 全红(10红) ×200 · 其余 ×1.8': '💰 Payout: ≥7 red ×4.5 · all-red (10 red) ×200 · otherwise ×1.8',
       '💰 赔付：精确 ×20 · 差一 ×3 · 差二回本 ×1': '💰 Payout: exact ×20 · off-by-one ×3 · off-by-two stake-back ×1',
+      // —— P1-7 career stats panel ——
+      '战绩': 'Record',
+      '最高连胜': 'Best Streak',
+      '胜率': 'Win Rate',
+      '总场次': 'Total Games',
+      '累计彩金': 'Total Payout',
+      '当前称号': 'Current Title',
+      '分战绩': 'Per-Mode Record',
+      '大小': 'Big/Small',
+      '单双': 'Odd/Even',
+      '顺子': 'Straight',
+      '红蓝': 'Red/Blue',
+      '称号墙': 'Title Wall',
+      '需{n}连胜': 'Need {n} streak',
+      '设置': 'Settings',
+      '语言': 'Language',
+      '音效': 'Sound',
+      '特效': 'Effects',
+      'AI 难度': 'AI Level',
+      '新手': 'Rookie',
+      '普通': 'Normal',
+      '大师': 'Master',
+      '重置单双连中链': 'Reset Odd/Even Chain',
+      '清空生涯数据': 'Clear All Data',
+      '单双连中链已重置': 'Odd/Even chain reset',
+      '确定清空所有生涯数据？': 'Clear all career data?',
+      '生涯数据已清空': 'Career data cleared',
+      '每日任务': 'Daily Tasks',
+      '今日奖励': "Today's Rewards",
+      '任务完成！+{r} 骰币': 'Task done! +{r} coins',
+      '领取': 'Claim',
+      '奖励': 'Reward',
+      '电脑赢了': 'Computer won',
+      '吹牛被识破！': 'Liar exposed!',
+      '叫点成立！': 'Bid stands!',
+      '你的红点：': 'Your red points:',
+      '电脑红点：': 'Computer red points:',
+      '你的骰子：': 'Your dice:',
+      '电脑骰子：': 'Computer dice:',
+      '已有的骰子：': 'Existing dice:',
+      '缺失的数字：': 'Missing numbers:',
+      '万能1使用：': 'Wild 1 used:',
+      '结果：顺子成立': 'Result: Straight valid',
+      '结果：顺子不成立': 'Result: Straight invalid',
+      '点': 'pts',
+      '红': 'red',
+      '蓝': 'blue',
+      '个 (共': ' (of ',
+      '个)': ' total)',
     }
   },
   get(key, vars) {
@@ -2913,17 +3106,17 @@ document.getElementById('btnRedNew').addEventListener('click', () => {
 
 // 电脑叫红点
 function computerRedTurn() {
-  const myTotal = calcRedTotal(computerDice);
-  // 只基于自己的骰子做决策，不再偷看玩家骰子
-  const expectedOther = 4; // 对方期望约4点
+  var myTotal = calcRedTotal(computerDice);
+  var m = DICE_PER_PLAYER; // 对手 5 骰
+  var theta = aiTier();
+  var totalCap = DICE_PER_PLAYER * 2; // 全场 10 骰
   
   if (!currentBid) {
-    // 电脑先叫：基于自己的点数 + 合理推测
-    const baseCall = myTotal + expectedOther;
-    const noise = Math.floor(Math.random() * 3) - 1;
-    let call = baseCall + noise;
-    call = Math.max(1, Math.min(40, call));
-    
+    // 电脑先叫：期望红点 ≈ myTotal + 对手期望(5骰×0.5×3.5≈8.75)
+    var expectedOther = Math.round(m * 0.5 * 3.5);
+    var baseCall = myTotal + expectedOther;
+    var noise = Math.floor(Math.random() * 3) - 1;
+    var call = Math.max(1, Math.min(40, baseCall + noise));
     currentBid = { total: call };
     document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {c} 点', {c: call});
     currentTurn = 0;
@@ -2931,46 +3124,24 @@ function computerRedTurn() {
     return;
   }
   
-  // 评估上家叫点
-  const lastCall = currentBid.total;
-  const fairCall = myTotal + expectedOther;
+  // P1-3: 二项分布评估 —— P(对手红分 ≥ lastCall - myTotal)
+  var lastCall = currentBid.total;
+  var need = lastCall - myTotal;
+  // 每骰红概率 ≈ 0.5（1/6×1 + 5/6×(1/3+2/3+…+6/3) 加权）
+  var pRedDice = 0.5;
+  // 对手需要的红骰数 ≈ need / 期望红骰值(≈3.5)
+  var needDice = Math.ceil(need / 3.5);
+  var pTrue = binomTail(m, pRedDice, needDice);
   
-  // 如果上家叫点远超公平值，较大概率开盅
-  if (lastCall > fairCall + 3) {
-    if (Math.random() < 0.75) {
-      revealRedJudge(1);
-      return;
-    }
-  }
-  
-  // 如果叫点接近或超过公平值，开盅
-  if (lastCall >= fairCall) {
-    if (Math.random() < 0.6) {
-      revealRedJudge(1);
-      return;
-    }
-  }
-  
-  // 偶尔吹牛加码
-  if (Math.random() < 0.2) {
-    const bluffCall = lastCall + 1 + Math.floor(Math.random() * 2);
-    currentBid = { total: Math.min(40, bluffCall) };
-    document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {c} 点', {c: Math.min(40, bluffCall)});
-    currentTurn = 0;
-    updateUI();
-    return;
-  }
-  
-  // 正常加码
-  let newCall = Math.max(lastCall + 1, fairCall);
-  newCall = Math.min(40, newCall);
-  
-  // 如果加码太高，直接开盅
-  if (newCall > fairCall + 4) {
+  // pTrue < θ 则开盅
+  if (pTrue < theta) {
     revealRedJudge(1);
     return;
   }
   
+  // 加码：叫到 lastCall + 1~2
+  var newCall = lastCall + 1 + Math.floor(Math.random() * 2);
+  newCall = Math.min(40, newCall);
   currentBid = { total: newCall };
   document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {c} 点', {c: newCall});
   currentTurn = 0;
@@ -2992,15 +3163,15 @@ function revealRedJudge(challenger) {
   
   let detail = I18N.t('叫点：{t} 点\n', {t: bidTotal});
   detail += I18N.t('实际：{t} 点\n', {t: actualTotal});
-  detail += `你的红点：${playerRed} 点\n`;
-  detail += `电脑红点：${computerRed} 点\n`;
+  detail += I18N.t('你的红点：') + playerRed + ' ' + I18N.t('点') + '\n';
+  detail += I18N.t('电脑红点：') + computerRed + ' ' + I18N.t('点') + '\n';
 
   let winner, title, emoji;
   if (isLiar) {
-    detail += `\n吹牛被识破！`;
+    detail += '\n' + I18N.t('吹牛被识破！');
     winner = challenger;
   } else {
-    detail += `\n叫点成立！`;
+    detail += '\n' + I18N.t('叫点成立！');
     winner = challenger === 0 ? 1 : 0;
   }
 
@@ -3009,11 +3180,11 @@ function revealRedJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger, redDice: settleRedDice });
   
   if (winner === 0) {
-    title = '🎉 你赢了！';
+    title = '🎉 ' + I18N.t('你赢了！');
     emoji = '🎉';
     playerWins++;
   } else {
-    title = '😅 电脑赢了';
+    title = '😅 ' + I18N.t('电脑赢了');
     emoji = '🤖';
     computerWins++;
   }
@@ -3149,50 +3320,43 @@ function computerBigSmallTurn() {
 }
 
 function aiBigSmallDecide() {
-  const myDice = computerDice;
-  const mySmall = myDice.filter(v => v >= 1 && v <= 3).length;
-  const myBig = myDice.filter(v => v >= 4 && v <= 6).length;
+  var myDice = computerDice;
+  var mySmall = myDice.filter(function(v){return v>=1&&v<=3;}).length;
+  var myBig = myDice.filter(function(v){return v>=4&&v<=6;}).length;
+  var m = DICE_PER_PLAYER;
+  var theta = aiTier();
 
   if (!currentBid) {
-    const bidSmall = mySmall + Math.floor(Math.random() * 2);
-    const bidBig = myBig + 2 + Math.floor(Math.random() * 2);
-    return { action: 'bid', small: Math.min(bidSmall, 10), big: Math.min(bidBig, 10) };
+    // P1-3: 基于自己的骰子 + 对手期望
+    var estOppSmall = Math.round(m * 0.5); // 对手约 2.5 个小
+    var estOppBig = m - estOppSmall;
+    var bidSmall = Math.min(10, mySmall + estOppSmall + (Math.random() < 0.3 ? 1 : 0));
+    var bidBig = Math.min(10, myBig + estOppBig + (Math.random() < 0.3 ? 1 : 0));
+    return { action: 'bid', small: bidSmall, big: bidBig };
   }
 
-  // 只基于自己的骰子做决策
-  const estTotalSmall = mySmall + 2; // 估计对手约2个小
-  const estTotalBig = myBig + 2;     // 估计对手约2个大
+  // P1-3: 二项分布评估 —— 对手 5 骰，每骰小概率 0.5
+  // P(对手小骰数 ≥ currentBid.small - mySmall) 且 P(对手大骰数 ≥ currentBid.big - myBig)
+  var needSmall = currentBid.small - mySmall;
+  var needBig = currentBid.big - myBig;
+  var pSmall = binomTail(m, 0.5, Math.max(0, needSmall));
+  var pBig = binomTail(m, 0.5, Math.max(0, needBig));
+  var pBoth = Math.min(pSmall, pBig); // 联合判据取 min
 
-  if (estTotalSmall < currentBid.small || estTotalBig < currentBid.big) {
-    if (Math.random() < 0.65) return { action: 'challenge' };
+  // pBoth < θ 则开盅
+  if (pBoth < theta) {
+    return { action: 'challenge' };
   }
 
-  if (Math.random() < 0.25) {
-    const newSmall = currentBid.small + (Math.random() < 0.4 ? 1 : 0);
-    const newBig = currentBid.big + (Math.random() < 0.6 ? 1 : 0);
-    if (newSmall + newBig <= 10) return { action: 'bid', small: newSmall, big: newBig };
+  // 加码：小或大加 1
+  var newSmall = currentBid.small;
+  var newBig = currentBid.big;
+  if (Math.random() < 0.5) newSmall++; else newBig++;
+  if (newSmall + newBig > 10) {
+    if (newSmall > currentBid.small) newSmall--;
+    else newBig--;
   }
-
-  const estPlayerSmall = Math.floor(Math.random() * 2);
-  const estPlayerBig = 2 + Math.floor(Math.random() * 2);
-  let newSmall = mySmall + estPlayerSmall;
-  let newBig = myBig + estPlayerBig;
-
-  if (newSmall + newBig <= currentBid.small + currentBid.big) {
-    if (Math.random() < 0.5) {
-      newSmall = currentBid.small + 1;
-      newBig = currentBid.big;
-    } else {
-      newSmall = currentBid.small;
-      newBig = currentBid.big + 1;
-    }
-  }
-
-  if (newSmall <= currentBid.small && newBig <= currentBid.big) {
-    newSmall = currentBid.small + 1;
-  }
-
-  return { action: 'bid', small: Math.min(newSmall, 10), big: Math.min(newBig, 10) };
+  return { action: 'bid', small: newSmall, big: newBig };
 }
 
 function revealBigSmallJudge(challenger) {
@@ -3210,19 +3374,19 @@ function revealBigSmallJudge(challenger) {
 
   let winner, title, emoji;
   if (isLiar) {
-    detail += `\n吹牛被识破！`;
+    detail += '\n' + I18N.t('吹牛被识破！');
     winner = challenger;
   } else {
-    detail += `\n叫点成立！`;
+    detail += '\n' + I18N.t('叫点成立！');
     winner = challenger === 0 ? 1 : 0;
   }
   // P0⑤⑥ 结算钩子（围骰彩金/押项在 onSettle 内处理）
   detail += onSettle(winner, { challenger: challenger, allDice: allDice });
 
   if (winner === 0) {
-    title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
+    title = '🎉 ' + I18N.t('你赢了！'); emoji = '🎉'; playerWins++;
   } else {
-    title = '😅 电脑赢了'; emoji = '🤖'; computerWins++;
+    title = '😅 ' + I18N.t('电脑赢了'); emoji = '🤖'; computerWins++;
   }
 
   document.getElementById('playerWins').textContent = playerWins;
@@ -3300,50 +3464,39 @@ function computerOddEvenTurn() {
 }
 
 function aiOddEvenDecide() {
-  const myDice = computerDice;
-  const myOdd = myDice.filter(v => v === 1 || v === 3 || v === 5).length;
-  const myEven = myDice.filter(v => v === 2 || v === 4 || v === 6).length;
+  var myDice = computerDice;
+  var myOdd = myDice.filter(function(v){return v%2===1;}).length;
+  var myEven = DICE_PER_PLAYER - myOdd;
+  var m = DICE_PER_PLAYER;
+  var theta = aiTier();
 
   if (!currentBid) {
-    const bidOdd = myOdd + Math.floor(Math.random() * 2);
-    const bidEven = myEven + 2 + Math.floor(Math.random() * 2);
-    return { action: 'bid', odd: Math.min(bidOdd, 10), even: Math.min(bidEven, 10) };
+    // P1-3: 基于自己的骰子 + 对手期望
+    var estOppOdd = Math.round(m * 0.5);
+    var estOppEven = m - estOppOdd;
+    return { action: 'bid', odd: Math.min(10, myOdd + estOppOdd), even: Math.min(10, myEven + estOppEven) };
   }
 
-  // 只基于自己的骰子做决策
-  const estTotalOdd = myOdd + 2;  // 估计对手约2个单
-  const estTotalEven = myEven + 2; // 估计对手约2个双
+  // P1-3: 二项分布评估 —— 对手 5 骰，每骰单概率 0.5
+  var needOdd = currentBid.odd - myOdd;
+  var needEven = currentBid.even - myEven;
+  var pOdd = binomTail(m, 0.5, Math.max(0, needOdd));
+  var pEven = binomTail(m, 0.5, Math.max(0, needEven));
+  var pBoth = Math.min(pOdd, pEven);
 
-  if (estTotalOdd < currentBid.odd || estTotalEven < currentBid.even) {
-    if (Math.random() < 0.65) return { action: 'challenge' };
+  if (pBoth < theta) {
+    return { action: 'challenge' };
   }
 
-  if (Math.random() < 0.25) {
-    const newOdd = currentBid.odd + (Math.random() < 0.4 ? 1 : 0);
-    const newEven = currentBid.even + (Math.random() < 0.6 ? 1 : 0);
-    if (newOdd + newEven <= 10) return { action: 'bid', odd: newOdd, even: newEven };
+  // 加码
+  var newOdd = currentBid.odd;
+  var newEven = currentBid.even;
+  if (Math.random() < 0.5) newOdd++; else newEven++;
+  if (newOdd + newEven > 10) {
+    if (newOdd > currentBid.odd) newOdd--;
+    else newEven--;
   }
-
-  const estPlayerOdd = Math.floor(Math.random() * 2);
-  const estPlayerEven = 2 + Math.floor(Math.random() * 2);
-  let newOdd = myOdd + estPlayerOdd;
-  let newEven = myEven + estPlayerEven;
-
-  if (newOdd + newEven <= currentBid.odd + currentBid.even) {
-    if (Math.random() < 0.5) {
-      newOdd = currentBid.odd + 1;
-      newEven = currentBid.even;
-    } else {
-      newOdd = currentBid.odd;
-      newEven = currentBid.even + 1;
-    }
-  }
-
-  if (newOdd <= currentBid.odd && newEven <= currentBid.even) {
-    newOdd = currentBid.odd + 1;
-  }
-
-  return { action: 'bid', odd: Math.min(newOdd, 10), even: Math.min(newEven, 10) };
+  return { action: 'bid', odd: newOdd, even: newEven };
 }
 
 function revealOddEvenJudge(challenger) {
@@ -3361,19 +3514,19 @@ function revealOddEvenJudge(challenger) {
 
   let winner, title, emoji;
   if (isLiar) {
-    detail += `\n吹牛被识破！`;
+    detail += '\n' + I18N.t('吹牛被识破！');
     winner = challenger;
   } else {
-    detail += `\n叫点成立！`;
+    detail += '\n' + I18N.t('叫点成立！');
     winner = challenger === 0 ? 1 : 0;
   }
   // P0⑤⑥ 结算钩子（单双连中递增赔付在 onSettle 内处理）
   detail += onSettle(winner, { challenger: challenger });
 
   if (winner === 0) {
-    title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
+    title = '🎉 ' + I18N.t('你赢了！'); emoji = '🎉'; playerWins++;
   } else {
-    title = '😅 电脑赢了'; emoji = '🤖'; computerWins++;
+    title = '😅 ' + I18N.t('电脑赢了'); emoji = '🤖'; computerWins++;
   }
 
   document.getElementById('playerWins').textContent = playerWins;
@@ -3496,38 +3649,48 @@ function computerStraightTurn() {
 }
 
 function aiStraightDecide() {
-  const myDice = computerDice;
-  const myWild = myDice.filter(v => v === 1).length;
-  const myNormal = myDice.filter(v => v !== 1);
+  var myDice = computerDice;
+  var myWild = myDice.filter(function(v){return v===1;}).length;
+  var myNormal = myDice.filter(function(v){return v!==1;});
+  var m = DICE_PER_PLAYER;
+  var theta = aiTier();
   
   if (!currentBid) {
-    // 没叫过点，评估自己能组多长的顺子
-    const maxLen = evaluateMaxStraight(myNormal, myWild);
-    if (maxLen >= 2) {
-      return { action: 'bid', len: Math.min(maxLen, 4) };
-    }
-    return { action: 'bid', len: 2 };
+    // P1-3: 评估自己能组多长的顺子
+    var maxLen = evaluateMaxStraight(myNormal, myWild);
+    return { action: 'bid', len: Math.max(2, Math.min(maxLen, 4)) };
   }
   
-  const lastLen = currentBid.len;
+  var lastLen = currentBid.len;
+  // P1-3: 概率评估 —— 对手 5 骰能补齐缺失面的概率
+  var missing = 0;
+  var haveSet = {};
+  var allDice = computerDice.concat(playerDice);
+  for (var i = 0; i < allDice.length; i++) haveSet[allDice[i]] = true;
+  for (var n = 1; n <= lastLen; n++) { if (!haveSet[n]) missing++; }
   
-  // 只基于自己的骰子评估能否组成顺子
-  const myValid = canFormStraight([...myNormal], myWild, 1, lastLen);
-  
-  if (myValid) {
-    // 自己能组成，尝试加码
-    const newLen = lastLen + 1;
-    if (canFormStraight([...myNormal], myWild, 1, newLen)) {
-      return { action: 'bid', len: newLen };
-    }
-    // 无法加码但成立，开盅
-    if (Math.random() < 0.6) return { action: 'challenge' };
-    // 偶尔冒险加码
-    return { action: 'bid', len: newLen };
+  var pStraight;
+  if (missing === 0) {
+    pStraight = 0.95; // 已全覆盖
   } else {
-    // 自己无法组成，但可能有万能1补充，开盅
+    // 对手 5 骰，每骰 6 靀，补缺概率 ≈ missing/6
+    // 需要 missing 个不同面各至少 1 次（简化：用二项近似）
+    var pEachDie = missing / 6;
+    pStraight = binomTail(m, pEachDie, missing);
+    pStraight = Math.min(0.9, pStraight);
+  }
+  
+  // 自己能组成顺子？
+  var myValid = canFormStraight(myNormal.slice(), myWild, 1, lastLen);
+  var pSupport = myValid ? pStraight : (1 - pStraight);
+  
+  if (pSupport < theta) {
     return { action: 'challenge' };
   }
+  
+  // 加码
+  var newLen = lastLen + 1;
+  return { action: 'bid', len: newLen };
 }
 
 function evaluateMaxStraight(normalDice, wildCount) {
@@ -3561,28 +3724,28 @@ function revealStraightJudge(challenger) {
   const info = getStraightInfo(1, len);
   
   let detail = I18N.t('叫点：长度{len} (1-{len})\n', {len: len});
-  detail += `已有的骰子：${info.have.join(', ') || '无'}\n`;
-  detail += `缺失的数字：${info.missing.join(', ') || '无'}\n`;
-  detail += `万能1使用：${info.usedWild}个 (共${info.wildCount}个)\n`;
-  detail += `结果：${isValid ? '顺子成立！' : '顺子不成立！'}`;
+  detail += I18N.t('已有的骰子：') + (info.have.join(', ') || I18N.t('无')) + '\n';
+  detail += I18N.t('缺失的数字：') + (info.missing.join(', ') || I18N.t('无')) + '\n';
+  detail += I18N.t('万能1使用：') + info.usedWild + I18N.t('个 (共') + info.wildCount + I18N.t('个)') + '\n';
+  detail += I18N.t(isValid ? '结果：顺子成立' : '结果：顺子不成立');
   
   let winner, title, emoji;
   if (isValid) {
     // 成立，开盅的人输
     winner = challenger === 0 ? 1 : 0;
-    detail += '\n叫点成立！';
+    detail += '\n' + I18N.t('叫点成立！');
   } else {
     // 不成立，吹牛者输
     winner = challenger;
-    detail += '\n吹牛被识破！';
+    detail += '\n' + I18N.t('吹牛被识破！');
   }
   // P0⑤⑥ 结算钩子（顺子胜局 ×10 赔付在 onSettle 内处理）
   detail += onSettle(winner, { challenger: challenger });
   
   if (winner === 0) {
-    title = '🎉 你赢了！'; emoji = '🎉'; playerWins++;
+    title = '🎉 ' + I18N.t('你赢了！'); emoji = '🎉'; playerWins++;
   } else {
-    title = '😅 电脑赢了'; emoji = '🤖'; computerWins++;
+    title = '😅 ' + I18N.t('电脑赢了'); emoji = '🤖'; computerWins++;
   }
   
   document.getElementById('playerWins').textContent = playerWins;
@@ -3628,59 +3791,39 @@ function computerRedBlueTurn() {
 }
 
 function aiRedBlueDecide() {
-  const myDice = computerDice;
-  const myRed = myDice.filter(v => isRed(v)).length;
-  const myBlue = myDice.filter(v => !isRed(v)).length;
+  var myDice = computerDice;
+  var myRed = myDice.filter(function(v){return isRed(v);}).length;
+  var myBlue = DICE_PER_PLAYER - myRed;
+  var m = DICE_PER_PLAYER;
+  var theta = aiTier();
 
   if (!currentBid) {
-    // 先叫：根据自己手牌叫
-    const bidRed = myRed + Math.floor(Math.random() * 2);
-    const bidBlue = myBlue + 2 + Math.floor(Math.random() * 2);
-    return { action: 'bid', red: Math.min(bidRed, 10), blue: Math.min(bidBlue, 10) };
+    // P1-3: 基于自己的骰子 + 对手期望（红概率 1/3，蓝 2/3）
+    var estOppRed = Math.round(m * (1/3));
+    var estOppBlue = m - estOppRed;
+    return { action: 'bid', red: Math.min(10, myRed + estOppRed), blue: Math.min(10, myBlue + estOppBlue) };
   }
 
-  // 只基于自己的骰子做决策
-  const estTotalRed = myRed + 2;  // 估计对手约2个红
-  const estTotalBlue = myBlue + 2; // 估计对手约2个蓝
-  
-  // 如果叫点已经超过估计值，开盅
-  if (estTotalRed < currentBid.red || estTotalBlue < currentBid.blue) {
-    if (Math.random() < 0.65) {
-      return { action: 'challenge' };
-    }
+  // P1-3: 二项分布评估 —— 对手 5 骰，每骰红概率 1/3
+  var needRed = currentBid.red - myRed;
+  var needBlue = currentBid.blue - myBlue;
+  var pRed = binomTail(m, 1/3, Math.max(0, needRed));
+  var pBlue = binomTail(m, 2/3, Math.max(0, needBlue));
+  var pBoth = Math.min(pRed, pBlue);
+
+  if (pBoth < theta) {
+    return { action: 'challenge' };
   }
 
-  // 有一定概率吹牛加码
-  if (Math.random() < 0.25) {
-    const newRed = currentBid.red + (Math.random() < 0.4 ? 1 : 0);
-    const newBlue = currentBid.blue + (Math.random() < 0.6 ? 1 : 0);
-    if (newRed + newBlue <= 10) {
-      return { action: 'bid', red: newRed, blue: newBlue };
-    }
+  // 加码
+  var newRed = currentBid.red;
+  var newBlue = currentBid.blue;
+  if (Math.random() < 0.5) newRed++; else newBlue++;
+  if (newRed + newBlue > 10) {
+    if (newRed > currentBid.red) newRed--;
+    else newBlue--;
   }
-
-  // 正常加码：根据自己手牌往上加
-  const estPlayerRed = Math.floor(Math.random() * 2);
-  const estPlayerBlue = 2 + Math.floor(Math.random() * 2);
-  
-  let newRed = myRed + estPlayerRed;
-  let newBlue = myBlue + estPlayerBlue;
-  
-  if (newRed + newBlue <= currentBid.red + currentBid.blue) {
-    if (Math.random() < 0.5) {
-      newRed = currentBid.red + 1;
-      newBlue = currentBid.blue;
-    } else {
-      newRed = currentBid.red;
-      newBlue = currentBid.blue + 1;
-    }
-  }
-  
-  if (newRed <= currentBid.red && newBlue <= currentBid.blue) {
-    newRed = currentBid.red + 1;
-  }
-
-  return { action: 'bid', red: Math.min(newRed, 10), blue: Math.min(newBlue, 10) };
+  return { action: 'bid', red: newRed, blue: newBlue };
 }
 
 function revealRedBlueJudge(challenger) {
@@ -3702,27 +3845,27 @@ function revealRedBlueJudge(challenger) {
   
   let detail = I18N.t('叫点：{r}红 {b}蓝\n', {r: currentBid.red, b: currentBid.blue});
   detail += I18N.t('实际：{r}红 {b}蓝（①和④为红点）\n', {r: actualRed, b: actualBlue});
-  detail += `你的骰子：红${playerRed} 蓝${playerBlue}\n`;
-  detail += `电脑骰子：红${computerRed} 蓝${computerBlue}\n`;
+  detail += I18N.t('你的骰子：') + I18N.t('红') + playerRed + ' ' + I18N.t('蓝') + playerBlue + '\n';
+  detail += I18N.t('电脑骰子：') + I18N.t('红') + computerRed + ' ' + I18N.t('蓝') + computerBlue + '\n';
   
   let winner, title, emoji;
 
   if (isLiar) {
-    detail += `\n吹牛被识破！`;
+    detail += '\n' + I18N.t('吹牛被识破！');
     winner = challenger; // 开盅的人赢
   } else {
-    detail += `\n叫点成立！`;
+    detail += '\n' + I18N.t('叫点成立！');
     winner = challenger === 0 ? 1 : 0; // 叫点的人赢
   }
   // P0⑤⑥ 结算钩子（红蓝分层赔付在 onSettle 内处理）
   detail += onSettle(winner, { challenger: challenger, actualRed: actualRed, actualBlue: actualBlue, bidRed: currentBid.red, bidBlue: currentBid.blue });
 
   if (winner === 0) {
-    title = '🎉 你赢了！';
+    title = '🎉 ' + I18N.t('你赢了！');
     emoji = '🎉';
     playerWins++;
   } else {
-    title = '😅 电脑赢了';
+    title = '😅 ' + I18N.t('电脑赢了');
     emoji = '🤖';
     computerWins++;
   }
@@ -3853,16 +3996,16 @@ function revealAndJudge(challenger) {
   const allDice = [...playerDice, ...computerDice];
   let detail = I18N.t('叫点：{c} 个 {v}\n', {c: bidCount, v: currentBid.value === 1 ? '①' : currentBid.value});
   detail += I18N.t('实际：{c} 个（含万能1点）\n', {c: actualCount});
-  detail += `你的骰子：${playerDice.join(' ')}\n`;
-  detail += `电脑骰子：${computerDice.join(' ')}\n`;
+  detail += I18N.t('你的骰子：') + playerDice.join(' ') + '\n';
+  detail += I18N.t('电脑骰子：') + computerDice.join(' ') + '\n';
 
   let winner, title, emoji;
 
   if (isLiar) {
-    detail += `\n吹牛被识破！`;
+    detail += '\n' + I18N.t('吹牛被识破！');
     winner = challenger; // 开盅的人赢
   } else {
-    detail += `\n叫点成立！`;
+    detail += '\n' + I18N.t('叫点成立！');
     winner = challenger === 0 ? 1 : 0; // 叫点的人赢
   }
 
@@ -3872,11 +4015,11 @@ function revealAndJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger });
 
   if (winner === 0) {
-    title = '🎉 你赢了！';
+    title = '🎉 ' + I18N.t('你赢了！');
     emoji = '🎉';
     playerWins++;
   } else {
-    title = '😅 电脑赢了';
+    title = '😅 ' + I18N.t('电脑赢了');
     emoji = '🤖';
     computerWins++;
   }
@@ -5017,6 +5160,9 @@ function updateStreakChip() {
   if (winStreak > 0) {
     chip.innerHTML = '<span class="flame">🔥</span>' + I18N.t('{n}连胜', { n: winStreak }) + ' · ' + titleName(curTitleIdx);
     chip.classList.toggle('hot', winStreak >= 3);
+  } else if (loseProtectActive) {
+    chip.textContent = '🛡️ ' + I18N.t('保护待命');
+    chip.classList.remove('hot');
   } else {
     chip.textContent = titleName(curTitleIdx);
     chip.classList.remove('hot');
@@ -5115,7 +5261,20 @@ function onSettle(winner, ctx) {
     var stats = DiceStore.get('dice_stats', {}) || {};
     stats.wins = (stats.wins || 0) + 1;
     stats.coins = (stats.coins || 0) + gainCoins;
+    stats.payoutTotal = (stats.payoutTotal || 0) + gainCoins;
+    if (!stats.perMode) stats.perMode = {};
+    var _mode = getCurrentMode();
+    if (!stats.perMode[_mode]) stats.perMode[_mode] = {w:0,l:0};
+    stats.perMode[_mode].w++;
     DiceStore.set('dice_stats', stats);
+
+    // P1-4: 任务进度更新
+    updateTaskProgress('play_5', 1);
+    if (_mode === 'liar') updateTaskProgress('win_liar', 1);
+    else if (_mode === 'red') updateTaskProgress('win_red', 1);
+    else if (_mode === 'bigsmall') updateTaskProgress('win_bigsmall', 1);
+    updateTaskProgress('earn_coins', gainCoins);
+    if (winStreak >= 3) updateTaskProgress('win_streak_3', 1);
 
     if (reason) extra += '\n💰 ' + reason + ' ';
     extra += '\n💰 ' + I18N.t('彩金 ×{m}：+{g} 骰币（累计 {c}）', { m: mult, g: gainCoins, c: stats.coins });
@@ -5130,6 +5289,10 @@ function onSettle(winner, ctx) {
       persistStreakStats();
       var stats2 = DiceStore.get('dice_stats', {}) || {};
       stats2.losses = (stats2.losses || 0) + 1;
+      if (!stats2.perMode) stats2.perMode = {};
+      var _mode2 = getCurrentMode();
+      if (!stats2.perMode[_mode2]) stats2.perMode[_mode2] = {w:0,l:0};
+      stats2.perMode[_mode2].l++;
       DiceStore.set('dice_stats', stats2);
     }
     if (gameMode === 'oddeven') oddevenWinChain = 0;
@@ -5140,6 +5303,97 @@ function onSettle(winner, ctx) {
   updateCareerLine();
   updateStreakChip();
   return extra;
+}
+
+// ============ P1-4 每日任务系统 ============
+const DAILY_TASKS = [
+  { id: 'win_liar', zh: '吹牛赢 3 局', en: 'Win 3 Liar rounds', target: 3, reward: 50 },
+  { id: 'win_red', zh: '红点赢 2 局', en: 'Win 2 Red rounds', target: 2, reward: 30 },
+  { id: 'win_bigsmall', zh: '大小赢 2 局', en: 'Win 2 Big/Small rounds', target: 2, reward: 30 },
+  { id: 'earn_coins', zh: '累计获得 100 骰币', en: 'Earn 100 coins total', target: 100, reward: 80 },
+  { id: 'win_streak_3', zh: '达成 3 连胜', en: 'Reach 3-win streak', target: 3, reward: 60 },
+  { id: 'play_5', zh: '游玩 5 局', en: 'Play 5 rounds', target: 5, reward: 40 },
+];
+const DAILY_REWARD_CAP = 450;
+
+function getDailyTasks() {
+  var today = new Date().toISOString().slice(0, 10);
+  var stored = DiceStore.get('dice_tasks', {});
+  if (!stored || stored.date !== today) {
+    var tasks = {};
+    for (var i = 0; i < DAILY_TASKS.length; i++) {
+      tasks[DAILY_TASKS[i].id] = { progress: 0, claimed: false };
+    }
+    stored = { date: today, tasks: tasks, totalReward: 0 };
+    DiceStore.set('dice_tasks', stored);
+  }
+  return stored;
+}
+
+function updateTaskProgress(taskId, amount) {
+  var data = getDailyTasks();
+  if (!data.tasks[taskId]) return;
+  var task = DAILY_TASKS.find(function(t) { return t.id === taskId; });
+  if (!task) return;
+  data.tasks[taskId].progress = Math.min(task.target, (data.tasks[taskId].progress || 0) + amount);
+  DiceStore.set('dice_tasks', data);
+  updateTaskCapsule();
+}
+
+function claimTaskReward(taskId) {
+  var data = getDailyTasks();
+  var task = DAILY_TASKS.find(function(t) { return t.id === taskId; });
+  if (!task || !data.tasks[taskId] || data.tasks[taskId].claimed) return false;
+  if (data.tasks[taskId].progress < task.target) return false;
+  if (data.totalReward >= DAILY_REWARD_CAP) return false;
+  var reward = Math.min(task.reward, DAILY_REWARD_CAP - data.totalReward);
+  data.tasks[taskId].claimed = true;
+  data.totalReward += reward;
+  var stats = DiceStore.get('dice_stats', {}) || {};
+  stats.coins = (stats.coins || 0) + reward;
+  DiceStore.set('dice_stats', stats);
+  DiceStore.set('dice_tasks', data);
+  showToast('🎁 ' + I18N.t('任务完成！+{r} 骰币', { r: reward }));
+  updateTaskCapsule();
+  return true;
+}
+
+function updateTaskCapsule() {
+  var el = document.getElementById('taskSummary');
+  if (!el) return;
+  var data = getDailyTasks();
+  var done = 0, total = DAILY_TASKS.length;
+  for (var i = 0; i < DAILY_TASKS.length; i++) {
+    if (data.tasks[DAILY_TASKS[i].id] && data.tasks[DAILY_TASKS[i].id].claimed) done++;
+  }
+  el.textContent = done + '/' + total;
+}
+
+function showTaskPanel() {
+  var data = getDailyTasks();
+  var html = '<div style="font-size:16px;margin-bottom:12px">📋 ' + I18N.t('每日任务') + ' (' + data.date + ')</div>';
+  html += '<div style="font-size:12px;margin-bottom:8px">💰 ' + I18N.t('今日奖励') + ': ' + data.totalReward + '/' + DAILY_REWARD_CAP + '</div>';
+  for (var i = 0; i < DAILY_TASKS.length; i++) {
+    var t = DAILY_TASKS[i];
+    var st = data.tasks[t.id] || { progress: 0, claimed: false };
+    var name = I18N.lang === 'en' ? t.en : t.zh;
+    var pct = Math.min(100, Math.round(st.progress / t.target * 100));
+    var done = st.progress >= t.target;
+    html += '<div style="margin:6px 0;padding:6px;background:rgba(255,255,255,0.05);border-radius:6px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<span>' + (st.claimed ? '✅' : done ? '🎁' : '📋') + ' ' + name + '</span>';
+    if (done && !st.claimed) {
+      html += '<button onclick="claimTaskReward(\'' + t.id + '\');showTaskPanel()" style="background:#4caf50;color:#fff;border:none;border-radius:4px;padding:2px 8px;cursor:pointer">' + I18N.t('领取') + '</button>';
+    }
+    html += '</div>';
+    html += '<div style="background:#333;border-radius:4px;height:6px;margin-top:4px">';
+    html += '<div style="background:' + (st.claimed ? '#666' : '#4caf50') + ';height:6px;border-radius:4px;width:' + pct + '%"></div>';
+    html += '</div>';
+    html += '<div style="font-size:11px;color:#888;margin-top:2px">' + st.progress + '/' + t.target + ' · ' + I18N.t('奖励') + ': +' + t.reward + '</div>';
+    html += '</div>';
+  }
+  document.getElementById('statsContent').innerHTML = html;
+  document.getElementById('statsOverlay').style.display = 'block';
 }
 
 // ============ 吹牛 AI 二项分布胜率模型（P0④）============
@@ -5180,6 +5434,20 @@ function aiNoise(level) {
   var nz = level.noise;
   if (nz < 0) return Math.floor(Math.random() * 2);           // 大师 0~1
   return Math.floor(Math.random() * (2 * nz + 1)) - nz;       // ±nz 整数均匀
+}
+
+// P1-3: AI 三档难度统一助手
+function aiTier() {
+  var lvl = effectiveLiarLevel();
+  if (lvl === 'rookie') return 0.28;
+  if (lvl === 'master') return 0.55;
+  return 0.42;
+}
+function aiThinkDelay() {
+  var lvl = effectiveLiarLevel();
+  if (lvl === 'rookie') return [900, 1600];
+  if (lvl === 'master') return [500, 1200];
+  return [700, 1500];
 }
 
 function aiDecide() {
@@ -5243,7 +5511,7 @@ try {
   const saved = localStorage.getItem('diceGameLang');
   if (saved === 'en' || saved === 'zh') I18N.lang = saved;
 } catch (e) {}
-injectLangButton();
+// injectLangButton(); // P1-6: 收敛进设置抽屉
 I18N.applyToDom();
 
 // 猜顺子默认选中长度2
@@ -5280,7 +5548,7 @@ function injectFxButtons() {
   paintSound();
   paintFx();
 }
-injectFxButtons();
+// injectFxButtons(); // P1-6: 收敛进设置抽屉
 
 // 吹牛 AI 难度选择器（P0④）
 function syncAiLevelBtns() {
@@ -5313,6 +5581,15 @@ DiceStore.onReady(() => {
   // AI 难度
   const lvl = DiceStore.get('dice_ai_level');
   if (lvl && LIAR_AI_LEVELS[lvl]) { liarLevel = lvl; syncAiLevelBtns(); }
+  // P1-6: 设置面板初始化
+  var sl = document.getElementById('settingLang');
+  if (sl) sl.value = I18N.lang || 'zh';
+  var ss = document.getElementById('settingSfx');
+  if (ss) ss.checked = !SFX.muted;
+  var sf = document.getElementById('settingFx');
+  if (sf) sf.checked = FX.enabled;
+  var sa = document.getElementById('settingAiLevel');
+  if (sa) sa.value = liarLevel || 'normal';
   // 连胜/称号恢复
   const st = DiceStore.get('dice_streak') || {};
   winStreak = st.win || 0;
@@ -5320,6 +5597,7 @@ DiceStore.onReady(() => {
   bestStreak = Math.max(bestStreak, st.best || 0);
   curTitleIdx = titleIndexFor(winStreak);
   updateUI(); // 刷新连胜章/生涯行/i18n 文案
+  updateTaskCapsule(); // P1-4: 任务胶囊初始化
 });
 
 // 关页前把防抖队列落盘
@@ -5329,10 +5607,147 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // 大小模式围骰押项：每局重置
 const _origNewRound = newRound;
 newRound = function () {
+  // P1-2: 连败保护接线 —— loseProtectArmed 在 registerLoss 3连败后置 true，
+  // newRound 时激活 loseProtectActive（本局 AI 降档 + 赢下 +2）
+  if (loseProtectArmed) {
+    loseProtectArmed = false;
+    loseProtectActive = true;
+  }
   const sideBet = document.getElementById('bigSmallTripleBet');
   if (sideBet) sideBet.checked = false;
   return _origNewRound.apply(this, arguments);
 };
+
+// P1-7: 生涯战绩面板
+function getCurrentMode() {
+  var activePane = document.querySelector('.game-pane.active');
+  return activePane ? activePane.id.replace('pane-', '') : 'liar';
+}
+function showStats() {
+  var stats = DiceStore.get('dice_stats', {}) || {};
+  var s = DiceStore.get('dice_streak', {}) || {};
+  var total = (stats.wins || 0) + (stats.losses || 0);
+  var winRate = total > 0 ? Math.round((stats.wins || 0) / total * 100) : 0;
+  var html = '<div style="text-align:center;margin-bottom:20px">';
+  html += '<div style="font-size:48px">🔥 ' + (s.best || 0) + '</div>';
+  html += '<div>' + I18N.t('最高连胜') + '</div>';
+  html += '<div style="margin-top:8px;font-size:24px">' + winRate + '% ' + I18N.t('胜率') + '</div>';
+  html += '<div>' + I18N.t('总场次') + ': ' + total + '</div>';
+  html += '<div>💰 ' + I18N.t('累计彩金') + ': ' + (stats.payoutTotal || 0) + '</div>';
+  html += '<div>' + I18N.t('当前称号') + ': ' + titleName(curTitleIdx) + '</div>';
+  html += '</div>';
+  html += '<div style="font-size:16px;margin-bottom:12px">' + I18N.t('分战绩') + '</div>';
+  var modes = ['liar','red','bigsmall','oddeven','straight','redblue'];
+  var modeNames = {liar:I18N.t('吹牛'),red:I18N.t('红点'),bigsmall:I18N.t('大小'),oddeven:I18N.t('单双'),straight:I18N.t('顺子'),redblue:I18N.t('红蓝')};
+  var perMode = stats.perMode || {};
+  for (var i = 0; i < modes.length; i++) {
+    var m = modes[i];
+    var w = (perMode[m]||{}).w || 0;
+    var l = (perMode[m]||{}).l || 0;
+    var t = w + l;
+    var pct = t > 0 ? Math.round(w/t*100) : 0;
+    html += '<div class="stats-bar"><div class="stats-bar-label">' + (modeNames[m]||m) + '</div>';
+    html += '<div class="stats-bar-fill" style="width:' + Math.max(20,pct) + '%">' + w + '/' + t + '</div></div>';
+  }
+  html += '<div style="font-size:16px;margin:20px 0 12px">' + I18N.t('称号墙') + '</div>';
+  for (var j = 0; j < TITLE_LADDER.length; j++) {
+    var T = TITLE_LADDER[j];
+    var unlocked = (s.best||0) >= T.min;
+    html += '<div style="padding:4px 0;opacity:' + (unlocked?1:0.4) + '">' + (unlocked?'🔓':'🔒') + ' ' + T.zh + ' / ' + T.en + ' (' + I18N.t('需{n}连胜',{n:T.min}) + ')</div>';
+  }
+  document.getElementById('statsContent').innerHTML = html;
+  document.getElementById('statsOverlay').style.display = 'block';
+}
+function closeStats() {
+  document.getElementById('statsOverlay').style.display = 'none';
+}
+
+// P1-6: 设置抽屉
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+function switchLang(lang) {
+  I18N.lang = lang;
+  DiceStore.set('dice_lang', lang);
+  I18N.apply();
+}
+function toggleSfx(on) {
+  SFX.muted = !on;
+  DiceStore.set('dice_muted', SFX.muted);
+  if (!SFX.muted) SFX.open();
+}
+function toggleFx(on) {
+  FX.enabled = on;
+  DiceStore.set('dice_fx', on);
+}
+function setAiLevel(lvl) {
+  liarLevel = lvl;
+  DiceStore.set('dice_ai_level', lvl);
+  syncAiLevelBtns();
+}
+function resetOddevenChain() {
+  oddevenWinChain = 0;
+  showToast(I18N.t('单双连中链已重置'));
+}
+function clearAllData() {
+  if (!confirm(I18N.t('确定清空所有生涯数据？'))) return;
+  DiceStore.set('dice_stats', {});
+  DiceStore.set('dice_streak', {});
+  DiceStore.set('dice_tasks', {});
+  winStreak = 0; loseStreak = 0; bestStreak = 0;
+  loseProtectArmed = false; loseProtectActive = false;
+  curTitleIdx = 0;
+  updateStreakChip(); updateCareerLine();
+  showToast(I18N.t('生涯数据已清空'));
+}
 </script>
+
+<!-- ── P1-7 生涯战绩面板 ── -->
+<div id="statsOverlay" class="stats-overlay" style="display:none">
+  <div class="stats-header">
+    <span>🏆 <span data-i18n="战绩">战绩</span></span>
+    <button onclick="closeStats()" class="stats-close">✕</button>
+  </div>
+  <div id="statsContent" class="stats-content"></div>
+</div>
+<button id="statsBtn" onclick="showStats()" class="stats-fab" title="🏆">🏆</button>
+
+<!-- ── P1-6 设置抽屉 ── -->
+<div id="settingsPanel" class="settings-panel">
+  <div class="settings-header">
+    <span>⚙️ <span data-i18n="设置">设置</span></span>
+    <button onclick="toggleSettings()" class="settings-close">✕</button>
+  </div>
+  <div class="settings-body">
+    <label>🌐 <span data-i18n="语言">语言</span></label>
+    <select id="settingLang" onchange="switchLang(this.value)">
+      <option value="zh">中文</option>
+      <option value="en">English</option>
+    </select>
+
+    <label>🔊 <span data-i18n="音效">音效</span></label>
+    <label class="switch"><input type="checkbox" id="settingSfx" onchange="toggleSfx(this.checked)"><span class="slider"></span></label>
+
+    <label>✨ <span data-i18n="特效">特效</span></label>
+    <label class="switch"><input type="checkbox" id="settingFx" onchange="toggleFx(this.checked)"><span class="slider"></span></label>
+
+    <label>🤖 <span data-i18n="AI 难度">AI 难度</span></label>
+    <select id="settingAiLevel" onchange="setAiLevel(this.value)">
+      <option value="rookie">🟢 <span data-i18n="新手">新手</span></option>
+      <option value="normal">🟡 <span data-i18n="普通">普通</span></option>
+      <option value="master">🔴 <span data-i18n="大师">大师</span></option>
+    </select>
+
+    <button onclick="resetOddevenChain()" class="settings-btn" data-i18n="重置单双连中链">重置单双连中链</button>
+    <button onclick="clearAllData()" class="settings-btn danger" data-i18n="清空生涯数据">清空生涯数据</button>
+  </div>
+</div>
+<button id="settingsBtn" onclick="toggleSettings()" class="settings-fab" title="⚙️">⚙️</button>
+
+<!-- ── P1-4 任务胶囊 ── -->
+<div id="taskCapsule" class="task-capsule" onclick="showTaskPanel()">
+  <span class="task-icon">📋</span>
+  <span id="taskSummary">0/6</span>
+</div>
 </body>
 </html>
