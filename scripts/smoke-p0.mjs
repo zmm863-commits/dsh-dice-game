@@ -127,7 +127,7 @@ check('LS 可用环境走 ls 链路且就绪', ev('DiceStore.readyFlag') === tru
 check('关键键(critical)即时落盘', (() => { ev("DiceStore.set('dice_fx', false)"); return w.localStorage.getItem('dice_fx') === 'false' })())
 check('防抖键 flushDirty 后落盘', (() => { ev("DiceStore.set('dice_stats',{wins:9})"); ev('DiceStore.flushDirty()'); return w.localStorage.getItem('dice_stats') === JSON.stringify({ wins: 9 }) })())
 check('无未捕获错误(ls 环境)', errors.length === 0, errors.slice(0, 3).join(' | '))
-check('UI 元素就位(难度/连胜章/生涯行/围骰押项)', ['aiLevelGroup', 'streakChip', 'careerLine', 'bigSmallTripleBet'].every(id => !!dom.window.document.getElementById(id)))
+check('UI 元素就位(倍注/连胜章/生涯行/围骰押项)', ['betSelector', 'streakChip', 'careerLine', 'bigSmallTripleBet'].every(id => !!dom.window.document.getElementById(id)))
 w.close()
 
 // 毒化用例：localStorage 抛 SecurityError 且无父窗（模拟 opaque iframe 单开）→ mem 静默降级

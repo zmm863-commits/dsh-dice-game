@@ -32,7 +32,7 @@
     z-index: 10;
   }
 
-  .header h1 {
+  .header-title {
     font-size: 1.2rem;
     background: linear-gradient(135deg, #a78bfa, #f472b6);
     -webkit-background-clip: text;
@@ -1359,10 +1359,10 @@
     .modal-overlay { padding: 12px; }
     .modal-content { padding: 16px; max-width: 95vw; }
     .settings-panel { width: 240px; }
-    .task-capsule { font-size: 11px; padding: 3px 8px; }
+    .inline-fab { width: 24px; height: 24px; font-size: 12px; }
     .stats-fab, .settings-fab { width: 32px; height: 32px; font-size: 16px; }
-    .stats-fab { right: 52px; top: 12px; }
-    .settings-fab { right: 12px; top: 12px; }
+    .stats-fab { left: 12px; top: 12px; }
+    .settings-fab { left: 50px; top: 12px; }
     .cover-title { font-size: 2.5rem; }
     .cover-dice { font-size: 2.5rem; }
     .cover-start-btn { padding: 12px 28px; font-size: 0.9rem; }
@@ -1380,9 +1380,14 @@
 
   /* ── P1-7 生涯战绩面板 ── */
   .stats-fab {
-    position: fixed; top: 14px; right: 56px; z-index: 999;
+    position: fixed; top: 14px; left: 14px; z-index: 999;
     background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
     width: 36px; height: 36px; font-size: 18px; cursor: pointer;
+  }
+  .inline-fab {
+    background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 50%;
+    width: 28px; height: 28px; font-size: 14px; cursor: pointer;
+    vertical-align: middle; margin-left: 6px;
   }
   .stats-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -1405,7 +1410,7 @@
 
   /* ── P1-6 设置抽屉 ── */
   .settings-fab {
-    position: fixed; top: 14px; right: 14px; z-index: 1000;
+    position: fixed; top: 14px; left: 56px; z-index: 1000;
     background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%;
     width: 36px; height: 36px; font-size: 18px; cursor: pointer;
   }
@@ -1428,15 +1433,40 @@
   }
   .settings-btn { cursor: pointer; background: #0f3460; }
   .settings-btn.danger { background: #e74c3c; }
-
-  /* ── P1-4 任务胶囊 ── */
-  .task-capsule {
-    position: fixed; top: 8px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.7); color: #fff; padding: 4px 12px;
-    border-radius: 12px; font-size: 12px; cursor: pointer;
-    z-index: 100; display: flex; align-items: center; gap: 6px;
+  .shop-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin: 4px 0 8px; }
+  .shop-item { text-align: center; font-size: 12px; padding: 8px 4px; line-height: 1.3; }
+  .shop-item small { color: #fbbf24; }
+  .shop-item.owned { background: #4caf50; opacity: 0.7; }
+  .item-bar { display: flex; gap: 4px; justify-content: center; margin: 4px 0; }
+  .item-use-btn {
+    background: rgba(0,0,0,0.4); border: 1px solid #555; color: #fff;
+    border-radius: 8px; padding: 3px 8px; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 3px;
   }
-  .task-capsule .task-icon { font-size: 14px; }
+  .item-use-btn:hover { background: rgba(76,175,80,0.3); border-color: #4caf50; }
+  .item-count { font-size: 11px; color: #aaa; }
+
+  /* ── P1-6 header row layout ── */
+  .header-row {
+    display: flex; align-items: center; width: 100%;
+  }
+  .header-title {
+    font-size: 1.1rem; font-weight: 700; color: #a78bfa; white-space: nowrap; margin-right: 8px;
+  }
+  .header .mode-selector { flex: 1; justify-content: center; }
+  .header-right {
+    display: flex; align-items: center; gap: 4px; white-space: nowrap; margin-left: 8px;
+  }
+  .bet-selector {
+    display: flex; align-items: center; gap: 2px;
+    background: rgba(0,0,0,0.4); border-radius: 12px; padding: 2px 4px;
+  }
+  .bet-label { font-size: 12px; padding: 0 2px; }
+  .bet-btn {
+    background: none; border: 1px solid transparent; color: #999;
+    font-size: 11px; padding: 2px 5px; border-radius: 8px; cursor: pointer;
+  }
+  .bet-btn.active { background: #f59e0b; color: #000; font-weight: 700; border-color: #f59e0b; }
 
   .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
   .switch input { opacity: 0; width: 0; height: 0; }
@@ -1574,16 +1604,30 @@
 <!-- 背景粒子 -->
 
 <div class="header">
-  <h1 data-i18n="🎲 骰子大作战">🎲 骰子大作战</h1>
-  <div class="mode-selector">
-    <button class="mode-btn active" id="modeLiar" data-i18n="吹牛">吹牛</button>
-    <button class="mode-btn" id="modeRed" data-i18n="猜红点">猜红点</button>
-    <button class="mode-btn" id="modeRedBlue" data-i18n="猜红蓝">猜红蓝</button>
-    <button class="mode-btn" id="modeBigSmall" data-i18n="猜大小">猜大小</button>
-    <button class="mode-btn" id="modeOddEven" data-i18n="猜单双">猜单双</button>
-    <button class="mode-btn" id="modeStraight" data-i18n="猜顺子">猜顺子</button>
+  <div class="header-row">
+    <span class="header-title" data-i18n="🎲 骰子大作战">🎲 骰子大作战</span>
+    <div class="mode-selector">
+      <button class="mode-btn active" id="modeLiar" data-i18n="吹牛">吹牛</button>
+      <button class="mode-btn" id="modeRed" data-i18n="猜红点">猜红点</button>
+      <button class="mode-btn" id="modeRedBlue" data-i18n="猜红蓝">猜红蓝</button>
+      <button class="mode-btn" id="modeBigSmall" data-i18n="猜大小">猜大小</button>
+      <button class="mode-btn" id="modeOddEven" data-i18n="猜单双">猜单双</button>
+      <button class="mode-btn" id="modeStraight" data-i18n="猜顺子">猜顺子</button>
+    </div>
+    <div class="header-right">
+      <span class="round-badge" id="roundBadge" data-i18n="第 1 局">第 1 局</span>
+      <div class="bet-selector" id="betSelector">
+        <span class="bet-label">💰</span>
+        <button class="bet-btn active" data-mult="1">1×</button>
+        <button class="bet-btn" data-mult="2">2×</button>
+        <button class="bet-btn" data-mult="5">5×</button>
+        <button class="bet-btn" data-mult="10">10×</button>
+      </div>
+      <button id="taskBtn" onclick="showTaskPanel()" class="inline-fab" title="📋">📋 <span id="taskSummary">0/6</span></button>
+      <button id="statsBtn" onclick="showStats()" class="inline-fab" title="🏆">🏆</button>
+      <button id="settingsBtn" onclick="toggleSettings()" class="inline-fab" title="⚙️">⚙️</button>
+    </div>
   </div>
-  <span class="round-badge" id="roundBadge" data-i18n="第 1 局">第 1 局</span>
 </div>
 
 <div class="game-area">
@@ -1612,6 +1656,11 @@
     </div>
     <div class="streak-chip" id="streakChip"></div>
     <div class="career-line" id="careerLine"></div>
+    <div class="item-bar" id="itemBar">
+      <button class="item-use-btn" data-item="peek" onclick="useItemInGame('peek')" title="偷看对手1颗骰子">👁️ <span class="item-count" id="peekCount">0</span></button>
+      <button class="item-use-btn" data-item="reroll" onclick="useItemInGame('reroll')" title="重新掷全部骰子">🎲 <span class="item-count" id="rerollCount">0</span></button>
+      <button class="item-use-btn" data-item="shield" onclick="useItemInGame('shield')" title="本局失败不扣骰币">🛡️ <span class="item-count" id="shieldCount">0</span></button>
+    </div>
   </div>
 
   <!-- 玩家区域 -->
@@ -1660,14 +1709,7 @@
       </div>
     </div>
     <div class="control-row">
-      <div class="control-group" style="flex-direction:column; align-items:center; gap:6px;">
-        <span class="control-label" data-i18n="🤖 AI 难度">🤖 AI 难度</span>
-        <div class="ai-level-group" id="aiLevelGroup">
-          <button class="ai-level-btn" data-level="rookie" data-i18n="新手">新手</button>
-          <button class="ai-level-btn active" data-level="normal" data-i18n="普通">普通</button>
-          <button class="ai-level-btn" data-level="master" data-i18n="大师">大师</button>
-        </div>
-      </div>
+      <!-- AI难度已固定为最高难度 -->
     </div>
     <div class="action-btns">
       <button class="action-btn btn-bid" id="btnBid" disabled data-i18n="📢 叫点">📢 叫点</button>
@@ -2145,6 +2187,19 @@ const I18N = {
       '任务完成！+{r} 骰币': '任务完成！+{r} 骰币',
       '领取': '领取',
       '奖励': '奖励',
+      '倍注亏损 -{b} 骰币': '倍注亏损 -{b} 骰币',
+      '骰币不足': '骰币不足',
+      '段位': '段位',
+      '铜': '铜',
+      '银': '银',
+      '金': '金',
+      '钻': '钻',
+      '大师': '大师',
+      '偷看骰子': '偷看骰子',
+      '重roll': '重roll',
+      '保命盾': '保命盾',
+      '购买成功': '购买成功',
+      '骰币不足无法购买': '骰币不足无法购买',
       '电脑赢了': '电脑赢了',
       '吹牛被识破！': '吹牛被识破！',
       '叫点成立！': '叫点成立！',
@@ -2403,6 +2458,18 @@ const I18N = {
       '任务完成！+{r} 骰币': 'Task done! +{r} coins',
       '领取': 'Claim',
       '奖励': 'Reward',
+      '倍注亏损 -{b} 骰币': 'Bet loss -{b} coins',
+      '骰币不足': 'Not enough coins',
+      '段位': 'Rank',
+      '铜': 'Bronze',
+      '银': 'Silver',
+      '金': 'Gold',
+      '钻': 'Diamond',
+      '偷看骰子': 'Peek',
+      '重roll': 'Reroll',
+      '保命盾': 'Shield',
+      '购买成功': 'Purchased!',
+      '骰币不足无法购买': 'Not enough coins',
       '电脑赢了': 'Computer won',
       '吹牛被识破！': 'Liar exposed!',
       '叫点成立！': 'Bid stands!',
@@ -4783,7 +4850,7 @@ function mpStartSingle() {
 // 持久化唯一正道：外层宿主(client.js)监听 message 并用宿主页 localStorage 代存。
 // 降级链路：iframe内 LS 直测 → 宿主桥 → 内存态＋UI提示「进度不保存」。
 const DiceStore = {
-  KEYS: ['dice_lang', 'dice_stats', 'dice_muted', 'dice_streak', 'dice_tasks', 'dice_ai_level', 'dice_fx'],
+  KEYS: ['dice_lang', 'dice_stats', 'dice_muted', 'dice_streak', 'dice_tasks', 'dice_ai_level', 'dice_fx', 'dice_items'],
   CRITICAL: ['dice_lang', 'dice_muted', 'dice_fx', 'dice_ai_level'], // 即时写，其余 3s 防抖合并
   CH: 'DICE-SAVE',
   VER: 1,
@@ -5173,7 +5240,8 @@ function updateCareerLine() {
   if (!line) return;
   var s = DiceStore.get('dice_stats', {}) || {};
   var w = s.wins || 0, l = s.losses || 0, c = s.coins || 0;
-  line.textContent = I18N.t('生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}', { w: w, l: l, c: c, b: Math.max(bestStreak, s.bestStreak || 0) });
+  var rank = getRank();
+  line.textContent = rank.emoji + ' ' + I18N.t('段位') + ':' + I18N.t(rank.zh) + ' · ' + I18N.t('生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}', { w: w, l: l, c: c, b: Math.max(bestStreak, s.bestStreak || 0) });
 }
 
 // ============ 赔付表（P0⑥，方案 §1.2 倍数落地）============
@@ -5257,11 +5325,13 @@ function onSettle(winner, ctx) {
       else if (diff === 2) reason = I18N.t('差二回本');
     }
 
-    var gainCoins = Math.round(STAKE * mult);
+    var betCost = STAKE * betMultiplier;
+    var gainCoins = Math.round(betCost * mult);
     var stats = DiceStore.get('dice_stats', {}) || {};
     stats.wins = (stats.wins || 0) + 1;
     stats.coins = (stats.coins || 0) + gainCoins;
     stats.payoutTotal = (stats.payoutTotal || 0) + gainCoins;
+    if (betMultiplier > 1) reason = (reason ? reason + ' ' : '') + '⚡' + betMultiplier + '×';
     if (!stats.perMode) stats.perMode = {};
     var _mode = getCurrentMode();
     if (!stats.perMode[_mode]) stats.perMode[_mode] = {w:0,l:0};
@@ -5289,6 +5359,15 @@ function onSettle(winner, ctx) {
       persistStreakStats();
       var stats2 = DiceStore.get('dice_stats', {}) || {};
       stats2.losses = (stats2.losses || 0) + 1;
+      // A: 赌注翻倍 —— 输局扣骰币（保命盾免除）
+      if (shieldActive) {
+        shieldActive = false;
+        extra += '\n🛡️ ' + I18N.t('保命盾已激活');
+      } else {
+        var betLoss = STAKE * betMultiplier;
+        stats2.coins = Math.max(0, (stats2.coins || 0) - betLoss);
+        if (betMultiplier > 1) extra += '\n💸 ' + I18N.t('倍注亏损 -{b} 骰币', { b: betLoss });
+      }
       if (!stats2.perMode) stats2.perMode = {};
       var _mode2 = getCurrentMode();
       if (!stats2.perMode[_mode2]) stats2.perMode[_mode2] = {w:0,l:0};
@@ -5315,6 +5394,35 @@ const DAILY_TASKS = [
   { id: 'play_5', zh: '游玩 5 局', en: 'Play 5 rounds', target: 5, reward: 40 },
 ];
 const DAILY_REWARD_CAP = 450;
+
+// C: 段位系统
+const RANK_LADDER = [
+  { min: 0,    zh: '铜', en: 'Bronze',   emoji: '🥉' },
+  { min: 500,  zh: '银', en: 'Silver',   emoji: '🥈' },
+  { min: 2000, zh: '金', en: 'Gold',     emoji: '🥇' },
+  { min: 5000, zh: '钻', en: 'Diamond',  emoji: '💎' },
+  { min: 15000, zh: '大师', en: 'Master', emoji: '👑' },
+];
+function getRank() {
+  var totalCoins = (DiceStore.get('dice_stats', {}).payoutTotal || 0);
+  var rank = RANK_LADDER[0];
+  for (var i = RANK_LADDER.length - 1; i >= 0; i--) {
+    if (totalCoins >= RANK_LADDER[i].min) { rank = RANK_LADDER[i]; break; }
+  }
+  return rank;
+}
+function getRankProgress() {
+  var totalCoins = (DiceStore.get('dice_stats', {}).payoutTotal || 0);
+  var current = RANK_LADDER[0], next = null;
+  for (var i = 0; i < RANK_LADDER.length; i++) {
+    if (totalCoins >= RANK_LADDER[i].min) current = RANK_LADDER[i];
+    else { next = RANK_LADDER[i]; break; }
+  }
+  if (!next) return 100;
+  var range = next.min - current.min;
+  var progress = totalCoins - current.min;
+  return Math.min(100, Math.round(progress / range * 100));
+}
 
 function getDailyTasks() {
   var today = new Date().toISOString().slice(0, 10);
@@ -5402,9 +5510,9 @@ function showTaskPanel() {
 const LIAR_AI_LEVELS = {
   rookie: { theta: 0.28, bluff: 0.05, noise: 2,  delay: [900, 1600], freqFix: false }, // 新手
   normal: { theta: 0.42, bluff: 0.12, noise: 1,  delay: [700, 1500], freqFix: false }, // 普通
-  master: { theta: 0.55, bluff: 0.08, noise: -1, delay: [500, 1200], freqFix: true },  // 大师（noise<0 ⇒ 0~1）
+  master: { theta: 0.65, bluff: 0.10, noise: -1, delay: [400, 1000], freqFix: true },  // 大师（提高theta让AI更激进）
 };
-let liarLevel = 'normal';
+let liarLevel = 'master'; // 默认最高难度
 // 大师档频率修正素材：玩家历史叫点总和 vs 开盅实际总和
 var aiFreqTrack = { called: 0, actual: 0, games: 0 };
 
@@ -5554,7 +5662,8 @@ function injectFxButtons() {
 function syncAiLevelBtns() {
   document.querySelectorAll('#aiLevelGroup .ai-level-btn').forEach(b => b.classList.toggle('active', b.dataset.level === liarLevel));
 }
-document.getElementById('aiLevelGroup').addEventListener('click', (e) => {
+var _alg = document.getElementById('aiLevelGroup');
+if (_alg) _alg.addEventListener('click', (e) => {
   const btn = e.target.closest('.ai-level-btn');
   if (!btn) return;
   liarLevel = btn.dataset.level;
@@ -5562,6 +5671,9 @@ document.getElementById('aiLevelGroup').addEventListener('click', (e) => {
   DiceStore.set('dice_ai_level', liarLevel);
   showToast('🤖 ' + I18N.t(liarLevel === 'rookie' ? '新手' : (liarLevel === 'master' ? '大师' : '普通')));
 });
+
+var ITEMS = { peek: { cost: 30 }, reroll: { cost: 50 }, shield: { cost: 80 } };
+var ownedItems = { peek: 0, reroll: 0, shield: 0 };
 
 DiceStore.init();
 DiceStore.onReady(() => {
@@ -5598,6 +5710,14 @@ DiceStore.onReady(() => {
   curTitleIdx = titleIndexFor(winStreak);
   updateUI(); // 刷新连胜章/生涯行/i18n 文案
   updateTaskCapsule(); // P1-4: 任务胶囊初始化
+  // B: 加载已购买道具
+  var savedItems = DiceStore.get('dice_items');
+  if (savedItems && typeof savedItems === 'object') {
+    ownedItems.peek = savedItems.peek || 0;
+    ownedItems.reroll = savedItems.reroll || 0;
+    ownedItems.shield = savedItems.shield || 0;
+  }
+  updateShopCoins();
 });
 
 // 关页前把防抖队列落盘
@@ -5634,7 +5754,10 @@ function showStats() {
   html += '<div style="margin-top:8px;font-size:24px">' + winRate + '% ' + I18N.t('胜率') + '</div>';
   html += '<div>' + I18N.t('总场次') + ': ' + total + '</div>';
   html += '<div>💰 ' + I18N.t('累计彩金') + ': ' + (stats.payoutTotal || 0) + '</div>';
-  html += '<div>' + I18N.t('当前称号') + ': ' + titleName(curTitleIdx) + '</div>';
+  var rank = getRank();
+  var rankPct = getRankProgress();
+  html += '<div>' + rank.emoji + ' ' + I18N.t('段位') + ': ' + I18N.t(rank.zh) + ' (' + rankPct + '%)</div>';
+  html += '<div style="background:#333;border-radius:4px;height:6px;width:100%;margin:4px 0"><div style="background:linear-gradient(90deg,#f59e0b,#fbbf24);height:6px;border-radius:4px;width:' + rankPct + '%"></div></div>';
   html += '</div>';
   html += '<div style="font-size:16px;margin-bottom:12px">' + I18N.t('分战绩') + '</div>';
   var modes = ['liar','red','bigsmall','oddeven','straight','redblue'];
@@ -5661,6 +5784,77 @@ function showStats() {
 function closeStats() {
   document.getElementById('statsOverlay').style.display = 'none';
 }
+
+function buyItem(type) {
+  var item = ITEMS[type];
+  if (!item) return;
+  var stats = DiceStore.get('dice_stats', {}) || {};
+  if ((stats.coins || 0) < item.cost) {
+    showToast('💸 ' + I18N.t('骰币不足'));
+    return;
+  }
+  stats.coins -= item.cost;
+  DiceStore.set('dice_stats', stats);
+  ownedItems[type] = (ownedItems[type] || 0) + 1;
+  DiceStore.set('dice_items', ownedItems);
+  showToast('✅ ' + I18N.t('购买成功') + ' ' + I18N.t(type === 'peek' ? '偷看骰子' : type === 'reroll' ? '重roll' : '保命盾'));
+  updateShopCoins();
+}
+
+function useItem(type) {
+  if ((ownedItems[type] || 0) <= 0) return false;
+  ownedItems[type]--;
+  DiceStore.set('dice_items', ownedItems);
+  return true;
+}
+
+function updateShopCoins() {
+  var el = document.getElementById('shopCoins');
+  if (el) el.textContent = (DiceStore.get('dice_stats', {}).coins || 0);
+  // 更新道具栏计数
+  var pc = document.getElementById('peekCount'); if (pc) pc.textContent = ownedItems.peek || 0;
+  var rc = document.getElementById('rerollCount'); if (rc) rc.textContent = ownedItems.reroll || 0;
+  var sc = document.getElementById('shieldCount'); if (sc) sc.textContent = ownedItems.shield || 0;
+}
+var shieldActive = false;
+function useItemInGame(type) {
+  if (!useItem(type)) {
+    showToast('❌ ' + I18N.t('骰币不足'));
+    return;
+  }
+  if (type === 'peek') {
+    // 偷看对手1颗骰子
+    if (computerDice.length > 0) {
+      var idx = Math.floor(Math.random() * computerDice.length);
+      showToast('👁️ ' + I18N.t('电脑骰子') + ' [' + (idx+1) + ']: ' + computerDice[idx]);
+    }
+  } else if (type === 'reroll') {
+    // 重roll自己的骰子
+    if (gamePhase === 'bidding' || gamePhase === 'shaking') {
+      rollDice();
+      renderDice();
+      showToast('🎲 ' + I18N.t('骰子已重掷'));
+    }
+  } else if (type === 'shield') {
+    shieldActive = true;
+    showToast('🛡️ ' + I18N.t('保命盾已激活'));
+  }
+  updateShopCoins();
+}
+
+// A: 赌注翻倍
+var betMultiplier = 1;
+(function initBetSelector() {
+  var el = document.getElementById('betSelector');
+  if (!el) return;
+  el.addEventListener('click', function(e) {
+    var btn = e.target.closest('.bet-btn');
+    if (!btn) return;
+    el.querySelectorAll('.bet-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    betMultiplier = parseInt(btn.dataset.mult) || 1;
+  });
+})();
 
 // P1-6: 设置抽屉
 function toggleSettings() {
@@ -5710,7 +5904,6 @@ function clearAllData() {
   </div>
   <div id="statsContent" class="stats-content"></div>
 </div>
-<button id="statsBtn" onclick="showStats()" class="stats-fab" title="🏆">🏆</button>
 
 <!-- ── P1-6 设置抽屉 ── -->
 <div id="settingsPanel" class="settings-panel">
@@ -5731,23 +5924,16 @@ function clearAllData() {
     <label>✨ <span data-i18n="特效">特效</span></label>
     <label class="switch"><input type="checkbox" id="settingFx" onchange="toggleFx(this.checked)"><span class="slider"></span></label>
 
-    <label>🤖 <span data-i18n="AI 难度">AI 难度</span></label>
-    <select id="settingAiLevel" onchange="setAiLevel(this.value)">
-      <option value="rookie">🟢 <span data-i18n="新手">新手</span></option>
-      <option value="normal">🟡 <span data-i18n="普通">普通</span></option>
-      <option value="master">🔴 <span data-i18n="大师">大师</span></option>
-    </select>
-
     <button onclick="resetOddevenChain()" class="settings-btn" data-i18n="重置单双连中链">重置单双连中链</button>
+    <label>🛒 <span data-i18n="道具商店">道具商店</span> (<span id="shopCoins">0</span> 💰)</label>
+    <div class="shop-grid">
+      <button onclick="buyItem('peek')" class="settings-btn shop-item" data-i18n-title="偷看对手1颗骰子">👁️ 偷看骰子<br><small>30💰</small></button>
+      <button onclick="buyItem('reroll')" class="settings-btn shop-item" data-i18n-title="重新掷全部骰子">🎲 重roll<br><small>50💰</small></button>
+      <button onclick="buyItem('shield')" class="settings-btn shop-item" data-i18n-title="本局失败不扣骰币">🛡️ 保命盾<br><small>80💰</small></button>
+    </div>
     <button onclick="clearAllData()" class="settings-btn danger" data-i18n="清空生涯数据">清空生涯数据</button>
   </div>
 </div>
-<button id="settingsBtn" onclick="toggleSettings()" class="settings-fab" title="⚙️">⚙️</button>
 
-<!-- ── P1-4 任务胶囊 ── -->
-<div id="taskCapsule" class="task-capsule" onclick="showTaskPanel()">
-  <span class="task-icon">📋</span>
-  <span id="taskSummary">0/6</span>
-</div>
 </body>
 </html>

@@ -85,6 +85,7 @@ const DICE_SAVE_KEYS: ReadonlySet<string> = new Set([
   'dice_tasks',
   'dice_ai_level',
   'dice_fx',
+  'dice_items',
 ])
 /** Hard cap on one stored value (JSON text bytes) — truncation defense. */
 const DICE_SAVE_MAX_VALUE_BYTES = 64 * 1024
