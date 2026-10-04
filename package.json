@@ -45,8 +45,8 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-host-webserver": "^0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6"
+    "@deepseek-ai/dsh-host-webserver": "^0.1.0-rc.6 || ^0.2.0-rc.1",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6 || ^0.2.0-rc.1"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
@@ -60,6 +60,6 @@
     "build": "tsdown && node build.mjs && node scripts/copy-assets.mjs",
     "watch": "tsdown --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node scripts/smoke-host.mjs && node scripts/smoke-client.mjs && node scripts/smoke-cordis.mjs && node scripts/smoke-p0.mjs"
+    "test": "node scripts/smoke-host.mjs && node scripts/smoke-client.mjs && node scripts/smoke-cordis.mjs && node scripts/smoke-p0.mjs && node scripts/smoke-mp-authority.mjs && node scripts/smoke-jev-proxy.mjs && node scripts/smoke-jev-difficulty.mjs && node scripts/smoke-tournament.mjs && node scripts/smoke-channel-swap.mjs && node scripts/smoke-ai-pure.mjs"
   }
 }

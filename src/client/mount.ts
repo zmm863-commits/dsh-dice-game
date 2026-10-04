@@ -80,6 +80,7 @@ const DICE_SAVE_VERSION = 1
 const DICE_SAVE_KEYS: ReadonlySet<string> = new Set([
   'dice_lang',
   'dice_stats',
+  'dice_stats_mp',
   'dice_muted',
   'dice_streak',
   'dice_tasks',

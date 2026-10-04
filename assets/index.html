@@ -367,29 +367,7 @@
   }
   .dice-toast.show { opacity: 1; transform: translateY(0); }
 
-  /* ===== 吹牛 AI 难度选择器（P0④）===== */
-  .ai-level-group {
-    display: flex;
-    gap: 6px;
-    justify-content: center;
-  }
-  .ai-level-btn {
-    padding: 5px 16px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.22);
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.75);
-    font-size: 0.78rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .ai-level-btn.active {
-    background: linear-gradient(135deg,#7c3aed,#4f46e5);
-    border-color: rgba(196,181,253,0.8);
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(124,58,237,0.45);
-  }
+  /* AI 难度已固定为最高档（master），选择器样式随 UI 一并移除（2026-09-27 定） */
 
   /* ===== 大小模式围骰押项（P0⑥）===== */
   .side-bet-row {
@@ -1408,6 +1386,52 @@
   }
   .stats-bar-lose { background: linear-gradient(90deg, #e74c3c, #f44336); }
 
+  /* ── ② 换频道 ── */
+  .swap-banner {
+    font-size: 12px;
+    color: #fbbf24;
+    margin: 4px 0;
+    text-align: center;
+  }
+  .swap-btn { width: 100%; margin-top: 4px; }
+  .swap-picker {
+    display: none;
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(0,0,0,0.28);
+  }
+  .swap-picker.show { display: block; }
+  .swap-title { font-size: 12px; opacity: 0.75; margin-bottom: 6px; }
+  .swap-opt { display: block; width: 100%; margin-bottom: 4px; }
+  .swap-opt small { opacity: 0.6; }
+
+  /* ── ③ 锦标赛：对局树 ── */
+  .tnt-body {
+    max-height: 46vh;
+    overflow-y: auto;
+    text-align: left;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  .tnt-round { margin-bottom: 10px; }
+  .tnt-round-title { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
+  .tnt-match {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 4px;
+  }
+  .tnt-match.live { outline: 1px solid rgba(251,191,36,0.8); }
+  .tnt-match.done { opacity: 0.72; }
+  .tnt-win { color: #fbbf24; font-weight: 700; }
+  .tnt-champ { text-align: center; font-size: 16px; margin-bottom: 10px; color: #fbbf24; }
+  .tnt-ghost { background: rgba(255,255,255,0.08); }
+
   /* ── P1-6 设置抽屉 ── */
   .settings-fab {
     position: fixed; top: 14px; left: 56px; z-index: 1000;
@@ -1570,7 +1594,7 @@
     <div class="mp-title" data-i18n="加入房间">加入房间</div>
     <div class="mp-subtitle" data-i18n="输入好友的房间号">输入好友的房间号</div>
     <div class="mp-join-area">
-      <input type="text" class="mp-input" id="mpJoinCode" placeholder="输入6位房间号" maxlength="6">
+      <input type="text" class="mp-input" id="mpJoinCode" placeholder="输入或粘贴邀请内容" maxlength="64">
       <button class="mp-join-submit" id="mpJoinSubmit" data-i18n="加入">加入</button>
     </div>
     <div class="mp-join-status" id="mpJoinStatus"></div>
@@ -1624,6 +1648,7 @@
         <button class="bet-btn" data-mult="10">10×</button>
       </div>
       <button id="taskBtn" onclick="showTaskPanel()" class="inline-fab" title="📋">📋 <span id="taskSummary">0/6</span></button>
+      <button id="tntBtn" onclick="tntOpen()" class="inline-fab" title="🏆">🏆</button>
       <button id="statsBtn" onclick="showStats()" class="inline-fab" title="🏆">🏆</button>
       <button id="settingsBtn" onclick="toggleSettings()" class="inline-fab" title="⚙️">⚙️</button>
     </div>
@@ -1650,6 +1675,9 @@
       <div class="bid-value" id="bidValue" data-i18n="尚未叫点">尚未叫点</div>
     </div>
     <div class="game-msg" id="gameMsg" data-i18n="点击「开始新局」发骰子">点击「开始新局」发骰子</div>
+    <div class="swap-banner" id="swapBanner" style="display:none;"></div>
+    <button class="settings-btn swap-btn" id="btnSwap" onclick="openSwapPicker()" style="display:none;" data-i18n="🔄 换频道">🔄 换频道</button>
+    <div class="swap-picker" id="swapPicker"></div>
     <div class="scoreboard" id="scoreBoard">
       <div class="score-item"><div class="score-dot p"></div> 你 <span id="playerWins">0</span> 胜</div>
       <div class="score-item"><div class="score-dot c"></div> 电脑 <span id="computerWins">0</span> 胜</div>
@@ -1930,6 +1958,17 @@
   </div>
 </div>
 
+<!-- ③ 锦标赛：骰王争霸赛 -->
+<div class="modal-overlay" id="tntOverlay">
+  <div class="modal">
+    <div class="modal-emoji">🏆</div>
+    <div class="modal-title" data-i18n="骰王争霸赛">骰王争霸赛</div>
+    <div class="tnt-body" id="tntBody"></div>
+    <button class="modal-btn" id="tntMainBtn" onclick="tntPrimary()" data-i18n="开始比赛">开始比赛</button>
+    <button class="modal-btn tnt-ghost" onclick="tntClose()" data-i18n="关闭">关闭</button>
+  </div>
+</div>
+
 <!-- 规则弹窗 -->
 <div class="modal-overlay" id="rulesOverlay">
   <div class="modal rules-modal">
@@ -2201,6 +2240,42 @@ const I18N = {
       '购买成功': '购买成功',
       '骰币不足无法购买': '骰币不足无法购买',
       '电脑赢了': '电脑赢了',
+      '好友赢了': '好友赢了',
+      '联机对局不可使用道具': '联机对局不可使用道具',
+      '联机战绩（独立账本）': '联机战绩（独立账本）',
+      '联机局数': '联机局数',
+      '系列赛': '系列赛',
+      '联机不产生骰币、不影响段位与每日任务': '联机不产生骰币、不影响段位与每日任务',
+      '电脑难度': '电脑难度',
+      'JEV 难度': 'JEV 难度',
+      'JEV 正在思考…': 'JEV 正在思考…',
+      'JEV 不可用，已回退电脑难度': 'JEV 不可用，已回退电脑难度',
+      '骰王争霸赛': '骰王争霸赛',
+      '骰王之王': '骰王之王',
+      '冠军：{n}': '冠军：{n}',
+      '👑 解锁称号：骰王之王': '👑 解锁称号：骰王之王',
+      '开始比赛': '开始比赛',
+      '再来一届': '再来一届',
+      '本局玩法：{m}': '本局玩法：{m}',
+      '骰王之王 解锁！': '骰王之王 解锁！',
+      '1/4 决赛': '1/4 决赛',
+      '半决赛': '半决赛',
+      '决赛': '决赛',
+      '第 {n} 轮': '第 {n} 轮',
+      '关闭': '关闭',
+      '🔄 换频道': '🔄 换频道',
+      '换到哪个频道？（必须叫满）': '换到哪个频道？（必须叫满）',
+      '须 ≥{n} 分': '须 ≥{n} 分',
+      '两项之和 = {n}': '两项之和 = {n}',
+      '{n} 分': '{n} 分',
+      '{c} 个 {v}': '{c} 个 {v}',
+      '{a}红{b}蓝': '{a}红{b}蓝',
+      '{a}小{b}大': '{a}小{b}大',
+      '{a}单{b}双': '{a}单{b}双',
+      '顺子长度 {n}': '顺子长度 {n}',
+      '换频道中：{m}｜只能开盅或继续换频道': '换频道中：{m}｜只能开盅或继续换频道',
+      '你从「{f}」换到「{t}」，叫满 {d}': '你从「{f}」换到「{t}」，叫满 {d}',
+      '电脑从「{f}」换到「{t}」，叫满 {d}': '电脑从「{f}」换到「{t}」，叫满 {d}',
       '吹牛被识破！': '吹牛被识破！',
       '叫点成立！': '叫点成立！',
       '你的红点：': '你的红点：',
@@ -2471,6 +2546,42 @@ const I18N = {
       '购买成功': 'Purchased!',
       '骰币不足无法购买': 'Not enough coins',
       '电脑赢了': 'Computer won',
+      '好友赢了': 'Friend won',
+      '联机对局不可使用道具': 'Items are disabled in online matches',
+      '联机战绩（独立账本）': 'Online record (separate ledger)',
+      '联机局数': 'Online rounds',
+      '系列赛': 'Series',
+      '联机不产生骰币、不影响段位与每日任务': 'Online play earns no coins and never affects rank or daily tasks',
+      '电脑难度': 'PC difficulty',
+      'JEV 难度': 'JEV difficulty',
+      'JEV 正在思考…': 'JEV is thinking…',
+      'JEV 不可用，已回退电脑难度': 'JEV unavailable — fell back to PC difficulty',
+      '骰王争霸赛': 'Dice King Championship',
+      '骰王之王': 'Dice King',
+      '冠军：{n}': 'Champion: {n}',
+      '👑 解锁称号：骰王之王': '👑 Title unlocked: Dice King',
+      '开始比赛': 'Start match',
+      '再来一届': 'Play again',
+      '本局玩法：{m}': 'This round: {m}',
+      '骰王之王 解锁！': 'Dice King unlocked!',
+      '1/4 决赛': 'Quarterfinal',
+      '半决赛': 'Semifinal',
+      '决赛': 'Final',
+      '第 {n} 轮': 'Round {n}',
+      '关闭': 'Close',
+      '🔄 换频道': '🔄 Switch channel',
+      '换到哪个频道？（必须叫满）': 'Switch to which channel? (must bid to the max)',
+      '须 ≥{n} 分': 'needs ≥{n} pts',
+      '两项之和 = {n}': 'the two counts must sum to {n}',
+      '{n} 分': '{n} pts',
+      '{c} 个 {v}': '{c} × {v}',
+      '{a}红{b}蓝': '{a} red / {b} blue',
+      '{a}小{b}大': '{a} small / {b} big',
+      '{a}单{b}双': '{a} odd / {b} even',
+      '顺子长度 {n}': 'straight length {n}',
+      '换频道中：{m}｜只能开盅或继续换频道': 'Channel: {m} — you may only reveal or switch again',
+      '你从「{f}」换到「{t}」，叫满 {d}': 'You switched {f} → {t}, maxed at {d}',
+      '电脑从「{f}」换到「{t}」，叫满 {d}': 'PC switched {f} → {t}, maxed at {d}',
       '吹牛被识破！': 'Liar exposed!',
       '叫点成立！': 'Bid stands!',
       '你的红点：': 'Your red points:',
@@ -2627,7 +2738,8 @@ function renderDice() {
   const cContainer = document.getElementById('computerDice');
 
   pContainer.innerHTML = '';
-  playerDice.forEach(v => pContainer.appendChild(createDiceEl(v, false)));
+  // 房主权威：客人在收到房主广播前 playerDice 是全 0，此处与对手骰子区一致地渲染占位
+  playerDice.forEach(v => pContainer.appendChild(v === 0 ? createDiceEl(1, true) : createDiceEl(v, false)));
 
   cContainer.innerHTML = '';
   
@@ -2688,7 +2800,8 @@ function formatBid(bid) {
 }
 
 // ============ 模式切换 ============
-function switchMode(mode) {
+// 只切换玩法 UI 与 gameMode，**不重置对局** —— 供「② 换频道」跨玩法使用
+function applyModeUI(mode) {
   gameMode = mode;
   document.getElementById('modeLiar').classList.toggle('active', mode === 'liar');
   document.getElementById('modeRed').classList.toggle('active', mode === 'red');
@@ -2715,9 +2828,141 @@ function switchMode(mode) {
   } else if (mode === 'straight') {
     document.getElementById('bidValue').textContent = I18N.t('猜顺子 (从1开始, 叫长度)');
   }
+}
+
+function switchMode(mode) {
+  applyModeUI(mode);
   resetGame();
   // 显示规则弹窗
   showRules(mode);
+}
+
+// ============ ② 换频道（跨玩法反制）============
+// 规则（用户 2026-09-27 定）：一方叫点后，另一方若判断开盅可能输，可「换频道」——
+// 切到另一种玩法并**叫满**：1v1 全场 10 颗时两项计数之和 = 10（如 6大4小）；
+// 切到猜红点则须 ≥20 分。之后对方只能「开盅」或「继续换频道」，不能再正常加注。
+// 顺子不参与（它叫的是长度，无法叫满）。判定始终按**最后所在频道**的规则。
+var SWAP_TARGETS = ['redblue', 'bigsmall', 'oddeven', 'liar', 'red'];
+var SWAP_RED_MIN = 20;
+var channelSwap = { active: false, from: null, count: 0 };
+
+function swapCapacity() { return DICE_PER_PLAYER * 2; }
+
+/** 按目标玩法生成「叫满」叫点；who: 0=玩家 / 1=电脑（各自按自己的骰子外推分配） */
+function buildSwapBid(target, who) {
+  var mine = (who === 0 ? playerDice : computerDice) || [];
+  var cap = swapCapacity();
+  if (target === 'red') {
+    var myRed = 0;
+    for (var i = 0; i < mine.length; i++) if (isRed(mine[i])) myRed += (mine[i] === 4 ? 4 : 1);
+    var est = mine.length ? Math.round(myRed / mine.length * cap) : 0;
+    return { total: Math.max(SWAP_RED_MIN, est) };
+  }
+  if (target === 'liar') {
+    var best = 2, bestN = -1;
+    for (var v = 2; v <= 6; v++) {
+      var n = 0;
+      for (var j = 0; j < mine.length; j++) if (mine[j] === v || mine[j] === 1) n++;
+      if (n > bestN) { bestN = n; best = v; }
+    }
+    return { count: cap, value: best };
+  }
+  var a = 0;
+  for (var k = 0; k < mine.length; k++) {
+    var d = mine[k];
+    if (target === 'redblue' && isRed(d)) a++;
+    if (target === 'bigsmall' && d <= 3) a++;
+    if (target === 'oddeven' && d % 2 === 1) a++;
+  }
+  var share = mine.length ? Math.round((a + 0.5) / (mine.length + 1) * cap) : Math.floor(cap / 2);
+  share = Math.max(0, Math.min(cap, share));
+  if (target === 'redblue') return { red: share, blue: cap - share };
+  if (target === 'bigsmall') return { small: share, big: cap - share };
+  return { odd: share, even: cap - share };
+}
+
+/** 把当前叫点描述成人话（换频道提示、频道横幅共用） */
+function describeBid(mode, bid) {
+  if (!bid) return '';
+  if (mode === 'red') return I18N.t('{n} 分', { n: bid.total });
+  if (mode === 'liar') return I18N.t('{c} 个 {v}', { c: bid.count, v: bid.value === 1 ? '①' : bid.value });
+  if (mode === 'redblue') return I18N.t('{a}红{b}蓝', { a: bid.red, b: bid.blue });
+  if (mode === 'bigsmall') return I18N.t('{a}小{b}大', { a: bid.small, b: bid.big });
+  if (mode === 'oddeven') return I18N.t('{a}单{b}双', { a: bid.odd, b: bid.even });
+  if (mode === 'straight') return I18N.t('顺子长度 {n}', { n: bid.len });
+  return '';
+}
+
+/** 执行换频道：切面板（不重置对局）+ 叫满 + 交出回合 */
+function doSwapChannel(target, who) {
+  if (SWAP_TARGETS.indexOf(target) < 0) return false;
+  if (target === gameMode) return false;
+  channelSwap.active = true;
+  channelSwap.from = gameMode;
+  channelSwap.count++;
+  applyModeUI(target);
+  currentBid = buildSwapBid(target, who);
+  currentTurn = 1 - who;
+  updateUI();
+  return true;
+}
+
+function resetChannelSwap() {
+  channelSwap.active = false;
+  channelSwap.from = null;
+  channelSwap.count = 0;
+}
+
+/** 换频道横幅 + 按钮可用性（由 updateUI 调用） */
+function updateChannelSwapUI() {
+  var banner = document.getElementById('swapBanner');
+  if (banner) {
+    if (channelSwap.active && gamePhase === 'bidding') {
+      banner.style.display = '';
+      banner.textContent = '🔄 ' + I18N.t('换频道中：{m}｜只能开盅或继续换频道', { m: I18N.t(TNT_MODE_NAMES[gameMode] || gameMode) });
+    } else {
+      banner.style.display = 'none';
+      banner.textContent = '';
+    }
+  }
+  var btn = document.getElementById('btnSwap');
+  if (btn) {
+    var usable = gamePhase === 'bidding' && currentTurn === 0 && !!currentBid;
+    btn.style.display = gamePhase === 'bidding' ? '' : 'none';
+    btn.disabled = !usable;
+  }
+}
+
+/** 玩家点「换频道」→ 选目标频道 */
+function openSwapPicker() {
+  if (gamePhase !== 'bidding' || currentTurn !== 0 || !currentBid) return;
+  var box = document.getElementById('swapPicker');
+  if (!box) return;
+  var html = '<div class="swap-title">' + I18N.t('换到哪个频道？（必须叫满）') + '</div>';
+  for (var i = 0; i < SWAP_TARGETS.length; i++) {
+    var m = SWAP_TARGETS[i];
+    if (m === gameMode) continue;
+    var note = m === 'red' ? I18N.t('须 ≥{n} 分', { n: SWAP_RED_MIN }) : I18N.t('两项之和 = {n}', { n: swapCapacity() });
+    html += '<button class="settings-btn swap-opt" onclick="pickSwap(\'' + m + '\')">'
+      + I18N.t(TNT_MODE_NAMES[m]) + ' <small>' + note + '</small></button>';
+  }
+  html += '<button class="settings-btn" onclick="closeSwapPicker()">' + I18N.t('取消') + '</button>';
+  box.innerHTML = html;
+  box.classList.add('show');
+}
+
+function closeSwapPicker() {
+  var box = document.getElementById('swapPicker');
+  if (box) box.classList.remove('show');
+}
+
+function pickSwap(target) {
+  closeSwapPicker();
+  var from = gameMode;
+  if (!doSwapChannel(target, 0)) return;
+  document.getElementById('gameMsg').textContent = '🔄 ' + I18N.t('你从「{f}」换到「{t}」，叫满 {d}',
+    { f: I18N.t(TNT_MODE_NAMES[from]), t: I18N.t(TNT_MODE_NAMES[target]), d: describeBid(target, currentBid) });
+  setTimeout(function () { computerTurn(); }, 1000);
 }
 
 document.getElementById('modeLiar').addEventListener('click', () => switchMode('liar'));
@@ -2792,6 +3037,7 @@ function resetGame() {
 function newRound() {
   gamePhase = 'shaking';
   currentBid = null;
+  resetChannelSwap(); // ② 新局开始：频道回到本局默认玩法
   selectCount = 0;
   selectValue = 0;
   redGuess = 0;
@@ -2809,22 +3055,28 @@ function newRound() {
 
   // 掷骰子动画
   if (mpGameActive) {
-    // 联机模式：只生成自己的骰子
-    playerDice = [];
-    for (let i = 0; i < DICE_PER_PLAYER; i++) {
-      playerDice.push(Math.floor(Math.random() * 6) + 1);
+    // 联机模式·房主权威：由房主一次性生成双方骰子再广播，客人不再本地掷骰，
+    // 从根上消除「双方各自 roll → 骰面分叉」的可能（前提：信任房主，见 v3 §三 B2）
+    if (mpIsHost) {
+      mpHostDice = [];
+      mpGuestDice = [];
+      for (let i = 0; i < DICE_PER_PLAYER; i++) {
+        mpHostDice.push(Math.floor(Math.random() * 6) + 1);
+        mpGuestDice.push(Math.floor(Math.random() * 6) + 1);
+      }
+      playerDice = [...mpHostDice];    // 房主视角：自己
+      computerDice = [...mpGuestDice]; // 房主视角：对手
+      mpSendDice();
+    } else {
+      playerDice = [0, 0, 0, 0, 0];    // 客人在收到房主广播前不掷骰
+      computerDice = [0, 0, 0, 0, 0];
+      mpSend({ type: 'need_dice' });   // 向房主请求本局骰子
     }
-    computerDice = [0, 0, 0, 0, 0]; // 0 表示还未收到对手骰子
   } else {
     rollDice();
   }
   renderDice();
   
-  // 联机模式：发送骰子给对手
-  if (mpGameActive) {
-    mpMyDice = [...playerDice];
-    mpSendDice();
-  }
 
   document.querySelectorAll('.dice').forEach(d => d.classList.add('shaking'));
   SFX.roll(); // P0② 掷骰音效
@@ -2987,6 +3239,15 @@ function updateUI() {
     document.getElementById('btnStraightNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
   }
   document.getElementById('btnNew').disabled = gamePhase === 'shaking' || gamePhase === 'waiting';
+
+  // ② 换频道：一旦进入换频道状态，双方都不能正常加注，只能开盅或继续换频道
+  if (channelSwap.active) {
+    ['btnBid', 'btnRedBid', 'btnRedBlueBid', 'btnBigSmallBid', 'btnOddEvenBid', 'btnStraightBid'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
+  }
+  updateChannelSwapUI();
 
   // 数字选择按钮
   document.querySelectorAll('#countGroup .num-btn').forEach(btn => {
@@ -3173,6 +3434,21 @@ document.getElementById('btnRedNew').addEventListener('click', () => {
 
 // 电脑叫红点
 function computerRedTurn() {
+  var applyRed = function (r) {
+    if (r.action === 'bid') {
+      currentBid = { total: r.total };
+      document.getElementById('gameMsg').textContent = aiBluffLine("bid") + I18N.t('电脑叫了 {c} 点', { c: r.total });
+      currentTurn = 0;
+      updateUI();
+    } else {
+      revealRedJudge(1);
+    }
+  };
+  // JEV 难度：交给 Jev 决策；失败/超时自动回退本地
+  if (effectiveLiarLevel() === 'jev') {
+    runJevTurn('red', applyRed, function () { return aiRedPure(computerDice, currentBid, aiTier()); });
+    return;
+  }
   var myTotal = calcRedTotal(computerDice);
   var m = DICE_PER_PLAYER; // 对手 5 骰
   var theta = aiTier();
@@ -3185,7 +3461,7 @@ function computerRedTurn() {
     var noise = Math.floor(Math.random() * 3) - 1;
     var call = Math.max(1, Math.min(40, baseCall + noise));
     currentBid = { total: call };
-    document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {c} 点', {c: call});
+    document.getElementById('gameMsg').textContent = aiBluffLine("bid") + I18N.t('电脑叫了 {c} 点', {c: call});
     currentTurn = 0;
     updateUI();
     return;
@@ -3210,7 +3486,7 @@ function computerRedTurn() {
   var newCall = lastCall + 1 + Math.floor(Math.random() * 2);
   newCall = Math.min(40, newCall);
   currentBid = { total: newCall };
-  document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {c} 点', {c: newCall});
+  document.getElementById('gameMsg').textContent = aiBluffLine("bid") + I18N.t('电脑叫了 {c} 点', {c: newCall});
   currentTurn = 0;
   updateUI();
 }
@@ -3247,11 +3523,11 @@ function revealRedJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger, redDice: settleRedDice });
   
   if (winner === 0) {
-    title = '🎉 ' + I18N.t('你赢了！');
+    title = mpSettleWinTitle();
     emoji = '🎉';
     playerWins++;
   } else {
-    title = '😅 ' + I18N.t('电脑赢了');
+    title = mpSettleLoseTitle();
     emoji = '🤖';
     computerWins++;
   }
@@ -3268,7 +3544,7 @@ function revealRedJudge(challenger) {
     document.getElementById('modalEmoji').textContent = emoji;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDetail').textContent = detail;
-    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalDice').innerHTML = mpSettleDiceRows();
     document.getElementById('modalOverlay').classList.add('show');
   }, 600);
 }
@@ -3369,22 +3645,7 @@ document.getElementById('btnBigSmallNew').addEventListener('click', () => {
 });
 
 // 猜大小电脑AI
-function computerBigSmallTurn() {
-  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
-  const result = aiBigSmallDecide();
-  updateUI();
-
-  setTimeout(() => {
-    if (result.action === 'bid') {
-      currentBid = { small: result.small, big: result.big };
-      document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {s}小 {b}大', {s: result.small, b: result.big});
-      currentTurn = 0;
-      updateUI();
-    } else {
-      revealBigSmallJudge(1);
-    }
-  }, 800);
-}
+function computerBigSmallTurn() { computerTwoCountTurn('bigsmall'); }
 
 function aiBigSmallDecide() {
   var myDice = computerDice;
@@ -3451,9 +3712,9 @@ function revealBigSmallJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger, allDice: allDice });
 
   if (winner === 0) {
-    title = '🎉 ' + I18N.t('你赢了！'); emoji = '🎉'; playerWins++;
+    title = mpSettleWinTitle(); emoji = '🎉'; playerWins++;
   } else {
-    title = '😅 ' + I18N.t('电脑赢了'); emoji = '🤖'; computerWins++;
+    title = mpSettleLoseTitle(); emoji = '🤖'; computerWins++;
   }
 
   document.getElementById('playerWins').textContent = playerWins;
@@ -3467,7 +3728,7 @@ function revealBigSmallJudge(challenger) {
     document.getElementById('modalEmoji').textContent = emoji;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDetail').textContent = detail;
-    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalDice').innerHTML = mpSettleDiceRows();
     document.getElementById('modalOverlay').classList.add('show');
   }, 600);
 }
@@ -3513,22 +3774,7 @@ document.getElementById('btnOddEvenNew').addEventListener('click', () => {
 });
 
 // 猜单双电脑AI
-function computerOddEvenTurn() {
-  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
-  const result = aiOddEvenDecide();
-  updateUI();
-
-  setTimeout(() => {
-    if (result.action === 'bid') {
-      currentBid = { odd: result.odd, even: result.even };
-      document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {o}单 {e}双', {o: result.odd, e: result.even});
-      currentTurn = 0;
-      updateUI();
-    } else {
-      revealOddEvenJudge(1);
-    }
-  }, 800);
-}
+function computerOddEvenTurn() { computerTwoCountTurn('oddeven'); }
 
 function aiOddEvenDecide() {
   var myDice = computerDice;
@@ -3591,9 +3837,9 @@ function revealOddEvenJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger });
 
   if (winner === 0) {
-    title = '🎉 ' + I18N.t('你赢了！'); emoji = '🎉'; playerWins++;
+    title = mpSettleWinTitle(); emoji = '🎉'; playerWins++;
   } else {
-    title = '😅 ' + I18N.t('电脑赢了'); emoji = '🤖'; computerWins++;
+    title = mpSettleLoseTitle(); emoji = '🤖'; computerWins++;
   }
 
   document.getElementById('playerWins').textContent = playerWins;
@@ -3607,7 +3853,7 @@ function revealOddEvenJudge(challenger) {
     document.getElementById('modalEmoji').textContent = emoji;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDetail').textContent = detail;
-    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalDice').innerHTML = mpSettleDiceRows();
     document.getElementById('modalOverlay').classList.add('show');
   }, 600);
 }
@@ -3645,8 +3891,8 @@ function canOddEvenBid(odd, even) {
 // ============ 猜顺子模式 ============
 
 // 判断顺子是否成立 (1=万能)
-function checkStraight(start, len) {
-  const allDice = [...playerDice, ...computerDice];
+function checkStraight(start, len, dicePool) {
+  const allDice = dicePool || [...playerDice, ...computerDice];
   const wildCount = allDice.filter(v => v === 1).length;
   const normalDice = allDice.filter(v => v !== 1);
   
@@ -3698,21 +3944,29 @@ function getStraightInfo(start, len) {
 // 电脑猜顺子AI
 function computerStraightTurn() {
   if (gamePhase !== 'bidding' || currentTurn !== 1) return;
-  
-  const result = aiStraightDecide();
-  updateUI();
-  
-  setTimeout(() => {
+
+  var applyStraight = function (result) {
     if (result.action === 'bid') {
       currentBid = { start: 1, len: result.len };
-      const seq = Array.from({length: result.len}, (_, i) => i + 1).join('');
-      document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {seq}', {seq: seq});
+      var seq = '';
+      for (var i = 1; i <= result.len; i++) seq += i;
+      document.getElementById('gameMsg').textContent = aiBluffLine("bid") + I18N.t('电脑叫了 {seq}', {seq: seq});
       currentTurn = 0;
       updateUI();
     } else {
       revealStraightJudge(1);
     }
-  }, 800);
+  };
+  // JEV 难度：交给 Jev 决策；失败/超时自动回退本地
+  if (effectiveLiarLevel() === 'jev') {
+    runJevTurn('straight', applyStraight, function () { return aiStraightPure(computerDice, currentBid, aiTier()); });
+    return;
+  }
+
+  const result = aiStraightDecide();
+  updateUI();
+
+  setTimeout(() => { applyStraight(result); }, 800);
 }
 
 function aiStraightDecide() {
@@ -3810,9 +4064,9 @@ function revealStraightJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger });
   
   if (winner === 0) {
-    title = '🎉 ' + I18N.t('你赢了！'); emoji = '🎉'; playerWins++;
+    title = mpSettleWinTitle(); emoji = '🎉'; playerWins++;
   } else {
-    title = '😅 ' + I18N.t('电脑赢了'); emoji = '🤖'; computerWins++;
+    title = mpSettleLoseTitle(); emoji = '🤖'; computerWins++;
   }
   
   document.getElementById('playerWins').textContent = playerWins;
@@ -3826,7 +4080,7 @@ function revealStraightJudge(challenger) {
     document.getElementById('modalEmoji').textContent = emoji;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDetail').textContent = detail;
-    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalDice').innerHTML = mpSettleDiceRows();
     document.getElementById('modalOverlay').classList.add('show');
   }, 600);
 }
@@ -3838,24 +4092,7 @@ function canStraightBid(len) {
 }
 
 // 电脑猜红蓝AI
-function computerRedBlueTurn() {
-  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
-
-  const result = aiRedBlueDecide();
-  updateUI();
-
-  setTimeout(() => {
-    if (result.action === 'bid') {
-      currentBid = { red: result.red, blue: result.blue };
-      document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {r}红 {b}蓝', {r: result.red, b: result.blue});
-      currentTurn = 0;
-      updateUI();
-    } else {
-      // 开盅
-      revealRedBlueJudge(1);
-    }
-  }, 800);
-}
+function computerRedBlueTurn() { computerTwoCountTurn('redblue'); }
 
 function aiRedBlueDecide() {
   var myDice = computerDice;
@@ -3928,11 +4165,11 @@ function revealRedBlueJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger, actualRed: actualRed, actualBlue: actualBlue, bidRed: currentBid.red, bidBlue: currentBid.blue });
 
   if (winner === 0) {
-    title = '🎉 ' + I18N.t('你赢了！');
+    title = mpSettleWinTitle();
     emoji = '🎉';
     playerWins++;
   } else {
-    title = '😅 ' + I18N.t('电脑赢了');
+    title = mpSettleLoseTitle();
     emoji = '🤖';
     computerWins++;
   }
@@ -3950,15 +4187,61 @@ function revealRedBlueJudge(challenger) {
     document.getElementById('modalEmoji').textContent = emoji;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDetail').textContent = detail;
-    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalDice').innerHTML = mpSettleDiceRows();
     document.getElementById('modalOverlay').classList.add('show');
   }, 600);
 }
 
 
 // ============ 电脑AI ============
+/** 按当前频道开盅（六玩法统一入口，换频道后 AI 也能正确判定） */
+function revealByMode(who) {
+  if (gameMode === 'liar') revealAndJudge(who);
+  else if (gameMode === 'red') revealRedJudge(who);
+  else if (gameMode === 'redblue') revealRedBlueJudge(who);
+  else if (gameMode === 'bigsmall') revealBigSmallJudge(who);
+  else if (gameMode === 'oddeven') revealOddEvenJudge(who);
+  else if (gameMode === 'straight') revealStraightJudge(who);
+}
+
+/** 应用 AI 决策：两种难度共用这个出口，保证落子行为完全一致 */
+function applyAiResult(result) {
+  if (!result) return;
+  if (result.action === 'bid') {
+    currentBid = { count: result.count, value: result.value };
+    document.getElementById('gameMsg').textContent = aiBluffLine("bid") + I18N.t('电脑叫了 {c} 个 {v}', {c: result.count, v: result.value === 1 ? I18N.t('①(万能)') : result.value});
+    currentTurn = 0;
+    updateUI();
+  } else {
+    // 开盅
+    revealAndJudge(1); // 1=电脑开盅
+  }
+}
+
 function computerTurn() {
   if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+
+  // ② 换频道状态：AI 只能开盅或继续换频道，不能再正常加注
+  if (channelSwap.active) {
+    setTimeout(function () {
+      if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+      // 对方「叫满」几乎不成立 → 多数直接开盅；偶尔继续换频道保留博弈空间
+      if (Math.random() < 0.7) { revealByMode(1); return; }
+      var others = SWAP_TARGETS.filter(function (m) { return m !== gameMode; });
+      var target = others[Math.floor(Math.random() * others.length)];
+      var from = gameMode;
+      if (!doSwapChannel(target, 1)) { revealByMode(1); return; }
+      document.getElementById('gameMsg').textContent = '🔄 ' + I18N.t('电脑从「{f}」换到「{t}」，叫满 {d}',
+        { f: I18N.t(TNT_MODE_NAMES[from]), t: I18N.t(TNT_MODE_NAMES[target]), d: describeBid(target, currentBid) });
+    }, 900);
+    return;
+  }
+
+  // JEV 难度：交给 Jev 决策；失败/超时自动回退本地电脑难度
+  if (effectiveLiarLevel() === 'jev') {
+    runJevTurn('liar', applyAiResult, function () { return aiDecide(); });
+    return;
+  }
 
   // AI策略（P0④ 二项分布胜率模型）
   const result = aiDecide();
@@ -3968,17 +4251,164 @@ function computerTurn() {
   const L = LIAR_AI_LEVELS[effectiveLiarLevel()] || LIAR_AI_LEVELS.normal;
   const thinkDelay = L.delay[0] + Math.floor(Math.random() * (L.delay[1] - L.delay[0] + 1));
 
-  setTimeout(() => {
-    if (result.action === 'bid') {
-      currentBid = { count: result.count, value: result.value };
-      document.getElementById('gameMsg').textContent = I18N.t('电脑叫了 {c} 个 {v}', {c: result.count, v: result.value === 1 ? I18N.t('①(万能)') : result.value});
+  setTimeout(() => { applyAiResult(result); }, thinkDelay);
+}
+
+// ============ JEV 难度（接入 Jev 决策模型）============
+// 游戏文档跑在 opaque-origin iframe 里，拿不到 API key，所以统一走宿主代理
+// /dice-game/ai（见 src/index.ts 的 handleAi），key 只存在于宿主进程。
+var GAME_AI_ENDPOINT = 'ai';
+
+// —— JEV 难度：六玩法通用（问题构造 + 本地合法回退 + 统一回合执行）——
+
+/** 为指定频道构造 Jev 的 state 与 questions */
+function buildJevAsk(mode) {
+  mode = mode || gameMode;
+  var my = computerDice.join(', ');
+  var cap = DICE_PER_PLAYER * 2;
+  var state = '';
+  if (mode === 'liar') {
+    var bidText = currentBid
+      ? (currentBid.count + ' 个 ' + (currentBid.value === 1 ? '①(万能)' : currentBid.value))
+      : '（本轮我先叫）';
+    state = '玩法:吹牛(大话骰)。双方各 5 颗骰子,共 10 颗,1 点为万能(可当任意点数)。\n'
+      + '我的骰子:' + my + '\n当前喊价:' + bidText
+      + '\n规则:开盅后若全场该点数(含万能 1)总数少于喊价,喊价方输;喊价须大于上家。';
+  } else if (TWO_COUNT_MODES[mode]) {
+    var cfg = TWO_COUNT_MODES[mode];
+    var names = {
+      bigsmall: ['小(1-3)', '大(4-6)'],
+      oddeven: ['单(奇)', '双(偶)'],
+      redblue: ['红(①④)', '蓝(②③⑤⑥)']
+    };
+    var cn = { bigsmall: '猜大小', oddeven: '猜单双', redblue: '猜红蓝' };
+    var nm = names[mode];
+    var bid2 = currentBid
+      ? (currentBid[cfg.keys[0]] + ' 个 ' + nm[0] + ' / ' + currentBid[cfg.keys[1]] + ' 个 ' + nm[1])
+      : '（本轮我先叫）';
+    state = '玩法:' + cn[mode] + '。双方各 5 颗,共 ' + cap + ' 颗。分类:' + nm[0] + ' 对 ' + nm[1] + '。\n'
+      + '我的骰子:' + my + '\n当前叫点:' + bid2
+      + '\n规则:开盅后两项的实际数都要不小于叫点才算叫点成立,否则叫点方输;两项之和上限 ' + cap + '。';
+  } else if (mode === 'red') {
+    var bidR = currentBid ? (currentBid.total + ' 点') : '（本轮我先叫）';
+    state = '玩法:猜红点。双方各 5 颗,共 ' + cap + ' 颗。①=1 分,④=4 分,其余 0 分,满分 40。\n'
+      + '我的骰子:' + my + '\n当前叫点:' + bidR
+      + '\n规则:开盅后全场实际总分不小于叫点才算成立,否则叫点方输;叫分须大于上家。';
+  } else {
+    var bidS = currentBid ? ('长度 ' + currentBid.len) : '（本轮我先叫）';
+    state = '玩法:猜顺子。双方各 5 颗,共 ' + cap + ' 颗。从 1 开始组连续点数,①为万能可补任意缺面。\n'
+      + '我的骰子:' + my + '\n当前叫点:' + bidS
+      + '\n规则:开盅后双方骰子(含万能)能组成 1..长度 的顺子则叫点成立,否则叫点方输;长度递增。';
+  }
+  return {
+    state: state,
+    questions: {
+      believe: { type: 'noul', instructions: 'Is the current bid likely to hold, given my dice?' },
+      action: {
+        type: 'choice',
+        instructions: 'What should I do now?',
+        criteria: { challenge: 'Challenge and reveal', raise: 'Raise the bid' }
+      }
+    }
+  };
+}
+
+/** 本地保证合法的叫点：Jev 只决定「质疑还是加注」，具体数值由本地给 */
+function localLegalBidByMode(mode) {
+  mode = mode || gameMode;
+  var cap = DICE_PER_PLAYER * 2;
+  if (mode === 'liar') {
+    var d = aiDecideLiarPure(computerDice, currentBid, 'master', 0);
+    if (d.action === 'bid') return d;
+    return {
+      action: 'bid',
+      count: Math.min(cap, (currentBid ? currentBid.count : 0) + 1),
+      value: currentBid ? currentBid.value : 2
+    };
+  }
+  if (TWO_COUNT_MODES[mode]) {
+    var d2 = aiTwoCountPure(mode, computerDice, currentBid, aiTier());
+    if (d2.action === 'bid') return d2;
+    var cfg = TWO_COUNT_MODES[mode];
+    var k1 = cfg.keys[0], k2 = cfg.keys[1];
+    var out = { action: 'bid' };
+    out[k2] = currentBid ? currentBid[k2] : Math.floor(cap / 2);
+    out[k1] = currentBid ? Math.min(cap - out[k2], currentBid[k1] + 1) : (cap - out[k2]);
+    return out;
+  }
+  if (mode === 'red') {
+    var d3 = aiRedPure(computerDice, currentBid, aiTier());
+    if (d3.action === 'bid') return d3;
+    return { action: 'bid', total: Math.min(40, (currentBid ? currentBid.total : 0) + 1) };
+  }
+  var d4 = aiStraightPure(computerDice, currentBid, aiTier());
+  if (d4.action === 'bid') return d4;
+  return { action: 'bid', len: Math.min(6, (currentBid ? currentBid.len : 1) + 1) };
+}
+
+/** 问 Jev（只回 choice）；加注数值由本地保证合法。失败会 reject，由调用方回退 */
+function aiDecideViaJev(mode) {
+  var ask = buildJevAsk(mode);
+  return fetch(GAME_AI_ENDPOINT, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ state: ask.state, questions: ask.questions })
+  }).then(function (r) {
+    if (!r.ok) throw new Error('jev http ' + r.status);
+    return r.json();
+  }).then(function (payload) {
+    var ans = (payload && payload.answers) || {};
+    if (ans.action && ans.action.choice === 'challenge') return { action: 'challenge' };
+    return localLegalBidByMode(mode);
+  });
+}
+
+/** 统一的 JEV 回合执行：问 Jev → 应用；失败/超时回退本地决策，绝不让对局卡死 */
+function runJevTurn(mode, apply, localDecide) {
+  document.getElementById('gameMsg').textContent = '🧠 ' + I18N.t('JEV 正在思考…');
+  updateUI();
+  aiDecideViaJev(mode).then(function (r) {
+    if (gamePhase !== 'bidding' || currentTurn !== 1) return; // 局面已变，丢弃
+    apply(r);
+  }).catch(function () {
+    if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+    apply(localDecide());
+    showToast('⚠️ ' + I18N.t('JEV 不可用，已回退电脑难度'), 2800);
+  });
+}
+
+/** 计数型玩法（大小/单双/红蓝）的电脑回合统一实现，支持 JEV 档 */
+function computerTwoCountTurn(mode) {
+  if (gamePhase !== 'bidding' || currentTurn !== 1) return;
+  var cfg = TWO_COUNT_MODES[mode];
+  var k1 = cfg.keys[0], k2 = cfg.keys[1];
+  var msgs = {
+    bigsmall: function (r) { return I18N.t('电脑叫了 {s}小 {b}大', { s: r.small, b: r.big }); },
+    oddeven: function (r) { return I18N.t('电脑叫了 {o}单 {e}双', { o: r.odd, e: r.even }); },
+    redblue: function (r) { return I18N.t('电脑叫了 {r}红 {b}蓝', { r: r.red, b: r.blue }); }
+  };
+  var apply = function (r) {
+    if (r.action === 'bid') {
+      var bidObj = {};
+      bidObj[k1] = r[k1];
+      bidObj[k2] = r[k2];
+      currentBid = bidObj;
+      document.getElementById('gameMsg').textContent = aiBluffLine('bid') + (msgs[mode] ? msgs[mode](r) : '');
       currentTurn = 0;
       updateUI();
     } else {
-      // 开盅
-      revealAndJudge(1); // 1=电脑开盅
+      revealByMode(1); // 开盅（按当前频道判定）
     }
-  }, thinkDelay);
+  };
+  if (effectiveLiarLevel() === 'jev') {
+    runJevTurn(mode, apply, function () {
+      return aiTwoCountPure(mode, computerDice, currentBid, aiTier());
+    });
+    return;
+  }
+  var result = aiTwoCountPure(mode, computerDice, currentBid, aiTier());
+  updateUI();
+  setTimeout(function () { apply(result); }, 800);
 }
 
 function aiDecide() {
@@ -4082,11 +4512,11 @@ function revealAndJudge(challenger) {
   detail += onSettle(winner, { challenger: challenger });
 
   if (winner === 0) {
-    title = '🎉 ' + I18N.t('你赢了！');
+    title = mpSettleWinTitle();
     emoji = '🎉';
     playerWins++;
   } else {
-    title = '😅 ' + I18N.t('电脑赢了');
+    title = mpSettleLoseTitle();
     emoji = '🤖';
     computerWins++;
   }
@@ -4105,13 +4535,15 @@ function revealAndJudge(challenger) {
     document.getElementById('modalEmoji').textContent = emoji;
     document.getElementById('modalTitle').textContent = title;
     document.getElementById('modalDetail').textContent = detail;
-    document.getElementById('modalDice').innerHTML = createDiceRowHTML('你', playerDice) + createDiceRowHTML('电脑', computerDice);
+    document.getElementById('modalDice').innerHTML = mpSettleDiceRows();
     document.getElementById('modalOverlay').classList.add('show');
   }, 600);
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('show');
+  // ③ 锦标赛：看完结算后推进本场对决（延到本轮收尾，避让下面的清理与渲染）
+  if (typeof tntAfterHumanRound === 'function') setTimeout(tntAfterHumanRound, 0);
   document.getElementById('modalDice').innerHTML = '';
   document.getElementById('playerZone').classList.remove('winner', 'loser');
   document.getElementById('computerZone').classList.remove('winner', 'loser');
@@ -4292,8 +4724,10 @@ let conn = null;
 let mpRoomCode = '';
 let mpIsHost = false;
 let mpConnected = false;
-let mpMyDice = [];
 let mpOpponentDice = [];
+// 房主权威掷骰：房主一次生成并广播的两组骰子（host=房主自己，guest=房主视角的对手）
+let mpHostDice = [];
+let mpGuestDice = [];
 let mpMyTurn = false;
 let mpGameActive = false;
 
@@ -4385,6 +4819,22 @@ function mpRenderRoomShare() {
       '<div style="font-size:1.6rem;font-weight:800;letter-spacing:4px;color:#a78bfa;">' + mpRoomCode + '</div>' +
       '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);text-align:center;line-height:1.5;">' + hint + '</div>' +
     '</div>';
+}
+
+// A7 修复：从整段邀请文本 / 链接 / 纯房间号中提取 6 位房间号。
+// 原来加入框 maxlength=6 撞上「🎲 骰子大作战 房间号：ABC123」这种整段邀请，粘贴必被截断成「🎲 骰子大」。
+function mpExtractRoomCode(raw) {
+  if (!raw) return '';
+  var text = String(raw).toUpperCase();
+  // 1) 优先取「房间号：XXXXXX」后面的那 6 位
+  var m = text.match(/房间号\s*[:：]?\s*([A-Z0-9]{6})/);
+  if (m) return m[1];
+  // 2) 按房间号字符集精确匹配（与 generateRoomCode 同一字符集：不含 I/O/0/1）
+  m = text.match(/[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}/);
+  if (m) return m[0];
+  // 3) 退化：任意 6 位字母数字（纯手输容错）
+  m = text.match(/[A-Z0-9]{6}/);
+  return m ? m[0] : '';
 }
 
 // 生成随机房间号
@@ -4547,13 +4997,25 @@ function mpJoinRoom(code) {
 function mpHandleData(data) {
   switch (data.type) {
     case 'dice':
-      mpOpponentDice = data.dice;
-      computerDice = [...data.dice];
+      // 房主权威：客人收到房主广播 —— 自己的骰子取 guest，对手取 host
+      if (data.host && data.guest) {
+        playerDice = [...data.guest];
+        computerDice = [...data.host];
+        mpOpponentDice = [...data.host];
+      } else if (data.dice) {
+        // 兼容旧协议（对端仍是旧构建）：此时只能拿到对手骰子
+        mpOpponentDice = [...data.dice];
+        computerDice = [...data.dice];
+      }
       renderDice();
       // 如果正在等待对手骰子，收到后开始叫点
       if (gamePhase === 'waiting') {
         startBidding();
       }
+      break;
+    case 'need_dice':
+      // 联机：客人点了「开始新局」→ 由房主生成并广播本局骰子
+      if (mpIsHost) newRound();
       break;
     case 'bid':
       // 对手叫点
@@ -4589,9 +5051,9 @@ function mpSend(data) {
   }
 }
 
-// 发送骰子
+// 发送骰子（房主权威：一次广播双方骰子）
 function mpSendDice() {
-  mpSend({ type: 'dice', dice: mpMyDice });
+  mpSend({ type: 'dice', host: mpHostDice, guest: mpGuestDice });
 }
 
 // 发送叫点
@@ -4608,6 +5070,11 @@ function mpSendChallenge() {
 function mpStartGame() {
   document.getElementById('mpOpponentBar').style.display = 'flex';
   document.getElementById('cheatBtn').style.display = 'none';
+  // A6 止血：peek 会直接吐出对手真实骰值、reroll 会把对手骰子一起重掷，押注器在联机局也不适用 —— 一并隐藏
+  const _mpItemBar = document.getElementById('itemBar');
+  if (_mpItemBar) _mpItemBar.style.display = 'none';
+  const _mpBetSel = document.getElementById('betSelector');
+  if (_mpBetSel) _mpBetSel.style.display = 'none';
   mpGameActive = true;
   
   // 联机模式：对手名称改为"好友"
@@ -4819,7 +5286,15 @@ function mpBindEvents() {
   });
   
   document.getElementById('mpJoinSubmit').addEventListener('click', () => {
-    const code = document.getElementById('mpJoinCode').value.toUpperCase();
+    // A7 修复：允许直接粘贴整段邀请文本，自动提取房间号
+    const code = mpExtractRoomCode(document.getElementById('mpJoinCode').value);
+    if (!code) {
+      const st = document.getElementById('mpJoinStatus');
+      st.textContent = I18N.t('请输入有效的房间号');
+      st.className = 'mp-join-status error';
+      return;
+    }
+    document.getElementById('mpJoinCode').value = code;
     mpJoinRoom(code);
   });
   
@@ -4850,7 +5325,7 @@ function mpStartSingle() {
 // 持久化唯一正道：外层宿主(client.js)监听 message 并用宿主页 localStorage 代存。
 // 降级链路：iframe内 LS 直测 → 宿主桥 → 内存态＋UI提示「进度不保存」。
 const DiceStore = {
-  KEYS: ['dice_lang', 'dice_stats', 'dice_muted', 'dice_streak', 'dice_tasks', 'dice_ai_level', 'dice_fx', 'dice_items'],
+  KEYS: ['dice_lang', 'dice_stats', 'dice_stats_mp', 'dice_muted', 'dice_streak', 'dice_tasks', 'dice_ai_level', 'dice_fx', 'dice_items'],
   CRITICAL: ['dice_lang', 'dice_muted', 'dice_fx', 'dice_ai_level'], // 即时写，其余 3s 防抖合并
   CH: 'DICE-SAVE',
   VER: 1,
@@ -5244,6 +5719,38 @@ function updateCareerLine() {
   line.textContent = rank.emoji + ' ' + I18N.t('段位') + ':' + I18N.t(rank.zh) + ' · ' + I18N.t('生涯 {w}胜{l}败 · 累计 {c} 骰币 · 最高🔥{b}', { w: w, l: l, c: c, b: Math.max(bestStreak, s.bestStreak || 0) });
 }
 
+// ============ A5：联机独立账本 ============
+// 联机与单人经济完全隔离：这里只统计联机局数/胜负/连胜/系列赛，
+// 不写 dice_stats、不发骰币、不推每日任务、不影响 RANK_LADDER。
+function mpStatsDefault() {
+  return { rounds: 0, wins: 0, losses: 0, bestStreak: 0, curStreak: 0, seriesWon: 0, seriesLost: 0, lastPlayed: '' };
+}
+function getMpStats() {
+  var raw = DiceStore.get('dice_stats_mp', null);
+  var out = mpStatsDefault();
+  if (raw && typeof raw === 'object') {
+    for (var k in out) if (typeof raw[k] === 'number') out[k] = raw[k];
+    out.lastPlayed = typeof raw.lastPlayed === 'string' ? raw.lastPlayed : '';
+  }
+  return out;
+}
+function recordMpRound(playerWon) {
+  var s = getMpStats();
+  s.rounds++;
+  if (playerWon) {
+    s.wins++;
+    s.curStreak++;
+    if (s.curStreak > s.bestStreak) s.bestStreak = s.curStreak;
+  } else {
+    s.losses++;
+    s.curStreak = 0;
+  }
+  s.lastPlayed = localDateStr();
+  DiceStore.set('dice_stats_mp', s);
+  if (typeof updateMpSeriesBadge === 'function') updateMpSeriesBadge();
+  return s;
+}
+
 // ============ 赔付表（P0⑥，方案 §1.2 倍数落地）============
 // 基注 STAKE 骰币；倍数为方案建议实付值（[PLACEHOLDER]，蒙特卡洛校验属后续轮）。
 // 十骰场适配：红点分档按全场红骰数(①④为红)；围骰彩金=任一点数≥3颗；
@@ -5379,6 +5886,10 @@ function onSettle(winner, ctx) {
     FX.shake(ctx.challenger === 0 ? 'shake-m' : 'shake-s');
     SFX.lose();
   }
+  // A5：联机局记入独立账本（不触碰单人 dice_stats / 骰币 / 每日任务 / 段位）
+  if (isMp) recordMpRound(winner === 0);
+  // ③ 锦标赛：人类参与的对局，把这一局胜负报给赛事引擎
+  if (typeof tntReportHumanRound === 'function') tntReportHumanRound(winner === 0);
   updateCareerLine();
   updateStreakChip();
   return extra;
@@ -5393,7 +5904,8 @@ const DAILY_TASKS = [
   { id: 'win_streak_3', zh: '达成 3 连胜', en: 'Reach 3-win streak', target: 3, reward: 60 },
   { id: 'play_5', zh: '游玩 5 局', en: 'Play 5 rounds', target: 5, reward: 40 },
 ];
-const DAILY_REWARD_CAP = 450;
+// C3 修复：封顶须等于当日任务奖励总额，否则永远触发不到（原文 450 > 六条合计 290）。
+const DAILY_REWARD_CAP = DAILY_TASKS.reduce(function (s, t) { return s + t.reward; }, 0);
 
 // C: 段位系统
 const RANK_LADDER = [
@@ -5424,8 +5936,14 @@ function getRankProgress() {
   return Math.min(100, Math.round(progress / range * 100));
 }
 
+// C3 修复：取本地日期。原来用 toISOString() 得到的是 UTC 日期，东八区要到 08:00 才换日。
+function localDateStr(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
 function getDailyTasks() {
-  var today = new Date().toISOString().slice(0, 10);
+  var today = localDateStr();
   var stored = DiceStore.get('dice_tasks', {});
   if (!stored || stored.date !== today) {
     var tasks = {};
@@ -5510,13 +6028,14 @@ function showTaskPanel() {
 const LIAR_AI_LEVELS = {
   rookie: { theta: 0.28, bluff: 0.05, noise: 2,  delay: [900, 1600], freqFix: false }, // 新手
   normal: { theta: 0.42, bluff: 0.12, noise: 1,  delay: [700, 1500], freqFix: false }, // 普通
-  master: { theta: 0.65, bluff: 0.10, noise: -1, delay: [400, 1000], freqFix: true },  // 大师（提高theta让AI更激进）
+  master: { theta: 0.82, bluff: 0.15, noise: -1, delay: [350, 900], freqFix: true },   // 大师（theta高=更敢开盅，bluff高=更会虚张声势）
 };
 let liarLevel = 'master'; // 默认最高难度
 // 大师档频率修正素材：玩家历史叫点总和 vs 开盅实际总和
 var aiFreqTrack = { called: 0, actual: 0, games: 0 };
 
 function effectiveLiarLevel() {
+  if (liarLevel === 'jev') return 'jev'; // JEV 档不走本地参数，也不参与连败降档
   if (loseProtectActive) {
     var order = ['rookie', 'normal', 'master'];
     var i = order.indexOf(liarLevel);
@@ -5548,7 +6067,7 @@ function aiNoise(level) {
 function aiTier() {
   var lvl = effectiveLiarLevel();
   if (lvl === 'rookie') return 0.28;
-  if (lvl === 'master') return 0.55;
+  if (lvl === 'master') return 0.82;
   return 0.42;
 }
 function aiThinkDelay() {
@@ -5558,17 +6077,22 @@ function aiThinkDelay() {
   return [700, 1500];
 }
 
-function aiDecide() {
-  var myDice = computerDice;
+// ============ ③.1 AI 决策参数化 ============
+// 原 aiDecide 直接读全局（computerDice / currentBid / liarLevel），因此无法用于
+// 「全 AI 对局真打」与跨玩法模拟。这里抽出**纯参数版**，原函数降为薄封装。
+// 好处：同一份逻辑既服务真人对手，也服务无头模拟，还服务 JEV 不可用时的回退。
+
+/** 纯参数版吹牛决策；freqAdj 为可选频率修正（大师档用，模拟时传 0） */
+function aiDecideLiarPure(myDice, bid, level, freqAdj) {
   var cnt = {};
   for (var v = 1; v <= 6; v++) cnt[v] = myDice.filter(function (d) { return d === v; }).length;
-  var L = LIAR_AI_LEVELS[effectiveLiarLevel()] || LIAR_AI_LEVELS.normal;
-  var m = DICE_PER_PLAYER;                 // 对手隐藏骰数 5
-  var totalCap = DICE_PER_PLAYER * 2;      // 全场 10 骰上限
+  var L = LIAR_AI_LEVELS[level] || LIAR_AI_LEVELS.master;
+  var m = DICE_PER_PLAYER;
+  var totalCap = DICE_PER_PLAYER * 2;
   var qOf = function (face) { return face === 1 ? 1 / 6 : 1 / 3; };
 
-  // 无叫点：开局选自己最可辩护的面（持有+万能），期望+噪声
-  if (!currentBid) {
+  // 无叫点：开局选自己最可辩护的面（持有 + 万能），期望 + 噪声
+  if (!bid) {
     var best = 2, bestScore = -1;
     for (var v2 = 2; v2 <= 6; v2++) {
       var sc = cnt[v2] + cnt[1];
@@ -5579,20 +6103,15 @@ function aiDecide() {
     return { action: 'bid', count: n0, value: best };
   }
 
-  // —— 胜率模型评估上家叫点 ——
-  var face = currentBid.value;
+  // 胜率模型评估上家叫点
+  var face = bid.value;
   var owned = face === 1 ? cnt[1] : cnt[face] + cnt[1];
-  var need = currentBid.count - owned;
-  var effTheta = L.theta;
-  if (L.freqFix && aiFreqTrack.games >= 3) {
-    // 统计玩家历史叫点偏差做频率修正：惯吹 → 更敢开盅
-    var overcall = (aiFreqTrack.called - aiFreqTrack.actual) / aiFreqTrack.games;
-    effTheta = Math.max(0.46, Math.min(0.62, L.theta + overcall * 0.05));
-  }
+  var need = bid.count - owned;
+  var effTheta = L.theta + (freqAdj || 0);
   var pTrue = binomTail(m, qOf(face), need);
   if (pTrue < effTheta) return { action: 'challenge' };
 
-  // —— 选择期望可辩护最高的面 ——
+  // 选期望可辩护最高的面
   var ranked = [];
   for (var v3 = 2; v3 <= 6; v3++) ranked.push({ v: v3, s: cnt[v3] + cnt[1] });
   ranked.sort(function (x, y) { return y.s - x.s; });
@@ -5600,12 +6119,209 @@ function aiDecide() {
   var secondFace = ranked[1] ? ranked[1].v : ranked[0].v;
   var n = Math.ceil(ranked[0].s + m * qOf(bestFace)) + aiNoise(L);
 
-  // 偶发诈唬保人味：大师仅低成本时机（当前叫点 ≤4）
-  var bluffOk = (liarLevel === 'master') ? currentBid.count <= 4 : true;
-  if (bluffOk && Math.random() < L.bluff && currentBid.count + 1 <= totalCap) {
-    return { action: 'bid', count: currentBid.count + 1, value: secondFace };
+  var bluffOk = (level === 'master') ? bid.count <= 4 : true;
+  if (bluffOk && Math.random() < L.bluff && bid.count + 1 <= totalCap) {
+    return { action: 'bid', count: bid.count + 1, value: secondFace };
   }
-  return { action: 'bid', count: Math.min(totalCap, Math.max(currentBid.count + 1, n)), value: bestFace };
+  return { action: 'bid', count: Math.min(totalCap, Math.max(bid.count + 1, n)), value: bestFace };
+}
+
+/** 吹牛开盅判定：bid 是否成立（全场该点数，含万能 1）。纯函数，不碰 DOM */
+function liarBidHolds(bid, diceA, diceB) {
+  if (!bid) return false;
+  var all = diceA.concat(diceB);
+  var total = 0;
+  for (var i = 0; i < all.length; i++) if (all[i] === bid.value || all[i] === 1) total++;
+  return total >= bid.count;
+}
+
+/** 无头跑一局吹牛（两个 AI 轮流叫点直到开盅）：返回 0 = A 胜 / 1 = B 胜 */
+function simulateLiarGame(diceA, diceB, levelA, levelB) {
+  var bid = null;
+  var turn = 0;
+  for (var guard = 0; guard < 200; guard++) {
+    var d = turn === 0
+      ? aiDecideLiarPure(diceA, bid, levelA || 'master', 0)
+      : aiDecideLiarPure(diceB, bid, levelB || 'master', 0);
+    if (d.action === 'challenge') {
+      // 开盅者（turn）赢当且仅当上家叫点不成立
+      return liarBidHolds(bid, diceA, diceB) ? (1 - turn) : turn;
+    }
+    bid = d;
+    turn = 1 - turn;
+  }
+  return Math.random() < 0.5 ? 0 : 1; // 极端兜底
+}
+
+// —— 两项计数型三玩法（大小 / 单双 / 红蓝）共用同一套参数化决策与判定 ——
+// 三者结构同构：把骰子归到第一/第二类，轮流叫两项计数，两项都够才算成立。
+var TWO_COUNT_MODES = {
+  bigsmall: { keys: ['small', 'big'], pFirst: 0.5, isFirst: function (v) { return v >= 1 && v <= 3; } },
+  oddeven: { keys: ['odd', 'even'], pFirst: 0.5, isFirst: function (v) { return v % 2 === 1; } },
+  redblue: { keys: ['red', 'blue'], pFirst: 1 / 3, isFirst: function (v) { return isRed(v); } }
+};
+
+/** 纯参数版两项计数决策（对应原 aiBigSmallDecide / aiOddEvenDecide / aiRedBlueDecide） */
+function aiTwoCountPure(mode, myDice, bid, theta) {
+  var cfg = TWO_COUNT_MODES[mode];
+  if (!cfg) return { action: 'challenge' };
+  var k1 = cfg.keys[0], k2 = cfg.keys[1];
+  var my1 = 0;
+  for (var i = 0; i < myDice.length; i++) if (cfg.isFirst(myDice[i])) my1++;
+  var my2 = myDice.length - my1;
+  var m = DICE_PER_PLAYER;
+  var cap = DICE_PER_PLAYER * 2;
+
+  if (!bid) {
+    var est1 = Math.round(m * cfg.pFirst);
+    var open = { action: 'bid' };
+    open[k1] = Math.min(cap, my1 + est1);
+    open[k2] = Math.min(cap, my2 + (m - est1));
+    return open;
+  }
+
+  var need1 = bid[k1] - my1;
+  var need2 = bid[k2] - my2;
+  var p1 = binomTail(m, cfg.pFirst, Math.max(0, need1));
+  var p2 = binomTail(m, 1 - cfg.pFirst, Math.max(0, need2));
+  if (Math.min(p1, p2) < theta) return { action: 'challenge' };
+
+  var next = { action: 'bid' };
+  next[k1] = bid[k1];
+  next[k2] = bid[k2];
+  if (Math.random() < 0.5) next[k1]++; else next[k2]++;
+  if (next[k1] + next[k2] > cap) {
+    if (next[k1] > bid[k1]) next[k1]--; else next[k2]--;
+  }
+  return next;
+}
+
+/** 两项计数型开盅判定：两项都要够才算成立 */
+function twoCountBidHolds(mode, bid, diceA, diceB) {
+  var cfg = TWO_COUNT_MODES[mode];
+  if (!cfg || !bid) return false;
+  var all = diceA.concat(diceB);
+  var n1 = 0;
+  for (var i = 0; i < all.length; i++) if (cfg.isFirst(all[i])) n1++;
+  return n1 >= bid[cfg.keys[0]] && (all.length - n1) >= bid[cfg.keys[1]];
+}
+
+/** 无头跑一局两项计数型（大小/单双/红蓝）：0 = A 胜 / 1 = B 胜 */
+function simulateTwoCountGame(mode, diceA, diceB, thetaA, thetaB) {
+  var bid = null;
+  var turn = 0;
+  for (var g = 0; g < 200; g++) {
+    var d = turn === 0
+      ? aiTwoCountPure(mode, diceA, bid, thetaA)
+      : aiTwoCountPure(mode, diceB, bid, thetaB);
+    if (d.action === 'challenge') {
+      return twoCountBidHolds(mode, bid, diceA, diceB) ? (1 - turn) : turn;
+    }
+    bid = d;
+    turn = 1 - turn;
+  }
+  return Math.random() < 0.5 ? 0 : 1;
+}
+
+// —— 猜红点 ——
+
+/** 纯参数版猜红点决策（对应原 computerRedTurn 的 AI 部分） */
+function aiRedPure(myDice, bid, theta) {
+  var myTotal = calcRedTotal(myDice);
+  var m = DICE_PER_PLAYER;
+  if (!bid) {
+    var expectedOther = Math.round(m * 0.5 * 3.5);
+    var noise = Math.floor(Math.random() * 3) - 1;
+    return { action: 'bid', total: Math.max(1, Math.min(40, myTotal + expectedOther + noise)) };
+  }
+  var need = bid.total - myTotal;
+  var needDice = Math.ceil(need / 3.5);
+  var pTrue = binomTail(m, 0.5, needDice);
+  if (pTrue < theta) return { action: 'challenge' };
+  return { action: 'bid', total: Math.min(40, bid.total + 1 + Math.floor(Math.random() * 2)) };
+}
+
+/** 猜红点开盅判定：实际总分是否够叫分 */
+function redBidHolds(bid, diceA, diceB) {
+  if (!bid) return false;
+  return calcRedTotal(diceA.concat(diceB)) >= bid.total;
+}
+
+/** 无头跑一局猜红点：0 = A 胜 / 1 = B 胜 */
+function simulateRedGame(diceA, diceB, thetaA, thetaB) {
+  var bid = null;
+  var turn = 0;
+  for (var g = 0; g < 200; g++) {
+    var d = turn === 0 ? aiRedPure(diceA, bid, thetaA) : aiRedPure(diceB, bid, thetaB);
+    if (d.action === 'challenge') {
+      return redBidHolds(bid, diceA, diceB) ? (1 - turn) : turn;
+    }
+    bid = d;
+    turn = 1 - turn;
+  }
+  return Math.random() < 0.5 ? 0 : 1;
+}
+
+// —— 猜顺子 ——
+
+/** 纯参数版猜顺子决策：只用自己骰子评估（原实现误把对手骰子也算进来，这里修正） */
+function aiStraightPure(myDice, bid, theta) {
+  var myWild = myDice.filter(function (v) { return v === 1; }).length;
+  var myNormal = myDice.filter(function (v) { return v !== 1; });
+  var m = DICE_PER_PLAYER;
+  if (!bid) {
+    var maxLen = evaluateMaxStraight(myNormal, myWild);
+    return { action: 'bid', len: Math.max(2, Math.min(maxLen, 4)) };
+  }
+  if (bid.len >= 6) return { action: 'challenge' }; // 长度到顶，无法再加
+  var have = {};
+  for (var i = 0; i < myDice.length; i++) have[myDice[i]] = true;
+  var missing = 0;
+  for (var n = 1; n <= bid.len; n++) if (!have[n]) missing++;
+  var pStraight = missing === 0 ? 0.95 : Math.min(0.9, binomTail(m, missing / 6, missing));
+  if (pStraight < theta) return { action: 'challenge' };
+  return { action: 'bid', len: bid.len + 1 };
+}
+
+/** 猜顺子开盅判定：双方骰子能否组成 1..len */
+function straightBidHolds(bid, diceA, diceB) {
+  if (!bid) return false;
+  return checkStraight(1, bid.len, diceA.concat(diceB)) === true;
+}
+
+/** 无头跑一局猜顺子：0 = A 胜 / 1 = B 胜 */
+function simulateStraightGame(diceA, diceB, thetaA, thetaB) {
+  var bid = null;
+  var turn = 0;
+  for (var g = 0; g < 200; g++) {
+    var d = turn === 0 ? aiStraightPure(diceA, bid, thetaA) : aiStraightPure(diceB, bid, thetaB);
+    if (d.action === 'challenge') {
+      return straightBidHolds(bid, diceA, diceB) ? (1 - turn) : turn;
+    }
+    bid = d;
+    turn = 1 - turn;
+  }
+  return Math.random() < 0.5 ? 0 : 1;
+}
+
+/** 统一入口：按玩法无头跑一局（③.1 现在覆盖全部六玩法） */
+function simulateAnyGame(mode, diceA, diceB) {
+  if (mode === 'liar') return simulateLiarGame(diceA, diceB, 'master', 'master');
+  if (mode === 'red') return simulateRedGame(diceA, diceB, 0.5, 0.5);
+  if (mode === 'straight') return simulateStraightGame(diceA, diceB, 0.5, 0.5);
+  if (TWO_COUNT_MODES[mode]) return simulateTwoCountGame(mode, diceA, diceB, 0.5, 0.5);
+  return Math.random() < 0.5 ? 0 : 1;
+}
+
+function aiDecide() {
+  var lvl = effectiveLiarLevel();
+  var L = LIAR_AI_LEVELS[lvl] || LIAR_AI_LEVELS.normal;
+  var adj = 0;
+  if (L.freqFix && aiFreqTrack.games >= 3) {
+    var overcall = (aiFreqTrack.called - aiFreqTrack.actual) / aiFreqTrack.games;
+    adj = Math.max(0.46, Math.min(0.62, L.theta + overcall * 0.05)) - L.theta;
+  }
+  return aiDecideLiarPure(computerDice, currentBid, lvl, adj);
 }
 // ============ 初始化 ============
 straightLen = 2;
@@ -5658,20 +6374,49 @@ function injectFxButtons() {
 }
 // injectFxButtons(); // P1-6: 收敛进设置抽屉
 
-// 吹牛 AI 难度选择器（P0④）
-function syncAiLevelBtns() {
-  document.querySelectorAll('#aiLevelGroup .ai-level-btn').forEach(b => b.classList.toggle('active', b.dataset.level === liarLevel));
-}
-var _alg = document.getElementById('aiLevelGroup');
-if (_alg) _alg.addEventListener('click', (e) => {
-  const btn = e.target.closest('.ai-level-btn');
-  if (!btn) return;
-  liarLevel = btn.dataset.level;
-  syncAiLevelBtns();
-  DiceStore.set('dice_ai_level', liarLevel);
-  showToast('🤖 ' + I18N.t(liarLevel === 'rookie' ? '新手' : (liarLevel === 'master' ? '大师' : '普通')));
-});
+// AI 难度选择器已移除：难度固定为最高档 master（2026-09-27 定）。
 
+// AI虚张声势文案库
+var AI_BLUFF = {
+  bid: [
+    '😤 不信你有这么多', '😈 我看穿你了', '🦊 狐狸尾巴露出来了',
+    '🎭 这把稳的', '💀 你确定？', '🔥 放马过来',
+    '😎 小场面', '🃏 信不信由你', '👊 接招吧', '🦾 机器不会骗人',
+  ],
+  challenge: [
+    '👀 开！', '💥 不演了', '🔎 让我看看', '⚡ 开盅见真章',
+    '🎯 赌一把', '🫣 忍不了了', '🧨 炸你', '🔍 纸包不住火',
+  ],
+  win: [
+    '🏆 意料之中', '🤖 计算无误', '💯 碾压', '🧠 AI > 人类',
+    '🎯 精准打击', '😤 不自量力', '🧊 冷静制胜', '👑 服不服？',
+  ],
+  lose: [
+    '🤔 这都能赢？', '😅 运气不错', '🎲 再来!', '🤖 不服再来',
+    '😏 侥幸而已', '💢 下次没这么好运', '😤 等着', '🧮 下把走着瞧',
+  ],
+};
+function aiBluffLine(type) {
+  var arr = AI_BLUFF[type] || AI_BLUFF.bid;
+  return arr[Math.floor(Math.random() * arr.length)] + '\n';
+}
+
+// A5 修复：结算文案按联机/单人分流 —— 联机局不得出现「电脑」字样与 AI 垃圾话
+function _isMpNow() {
+  return (typeof mpGameActive !== 'undefined') && mpGameActive === true;
+}
+function mpOppLabel() {
+  return _isMpNow() ? I18N.t('好友') : I18N.t('电脑');
+}
+function mpSettleWinTitle() {
+  return _isMpNow() ? '🎉 ' + I18N.t('你赢了！') : aiBluffLine('lose') + '🎉 ' + I18N.t('你赢了！');
+}
+function mpSettleLoseTitle() {
+  return _isMpNow() ? '🤝 ' + I18N.t('好友赢了') : aiBluffLine('win') + '😅 ' + I18N.t('电脑赢了');
+}
+function mpSettleDiceRows() {
+  return createDiceRowHTML(I18N.t('你'), playerDice) + createDiceRowHTML(mpOppLabel(), computerDice);
+}
 var ITEMS = { peek: { cost: 30 }, reroll: { cost: 50 }, shield: { cost: 80 } };
 var ownedItems = { peek: 0, reroll: 0, shield: 0 };
 
@@ -5690,9 +6435,11 @@ DiceStore.onReady(() => {
   const fb = document.getElementById('diceFxBtn');
   if (sb) { sb.textContent = SFX.muted ? '🔇' : '🔊'; }
   if (fb) { fb.textContent = FX.enabled ? '✨' : '💤'; fb.style.opacity = FX.enabled ? '1' : '0.55'; }
-  // AI 难度
-  const lvl = DiceStore.get('dice_ai_level');
-  if (lvl && LIAR_AI_LEVELS[lvl]) { liarLevel = lvl; syncAiLevelBtns(); }
+  // AI 难度：两档 —— 电脑难度(master) / JEV 难度(jev)；从存储恢复并回填 UI
+  var _savedLvl = DiceStore.get('dice_ai_level');
+  liarLevel = (_savedLvl === 'jev') ? 'jev' : 'master';
+  var _saEl = document.getElementById('settingAiLevel');
+  if (_saEl) _saEl.value = liarLevel;
   // P1-6: 设置面板初始化
   var sl = document.getElementById('settingLang');
   if (sl) sl.value = I18N.lang || 'zh';
@@ -5700,8 +6447,6 @@ DiceStore.onReady(() => {
   if (ss) ss.checked = !SFX.muted;
   var sf = document.getElementById('settingFx');
   if (sf) sf.checked = FX.enabled;
-  var sa = document.getElementById('settingAiLevel');
-  if (sa) sa.value = liarLevel || 'normal';
   // 连胜/称号恢复
   const st = DiceStore.get('dice_streak') || {};
   winStreak = st.win || 0;
@@ -5759,6 +6504,16 @@ function showStats() {
   html += '<div>' + rank.emoji + ' ' + I18N.t('段位') + ': ' + I18N.t(rank.zh) + ' (' + rankPct + '%)</div>';
   html += '<div style="background:#333;border-radius:4px;height:6px;width:100%;margin:4px 0"><div style="background:linear-gradient(90deg,#f59e0b,#fbbf24);height:6px;border-radius:4px;width:' + rankPct + '%"></div></div>';
   html += '</div>';
+  // A5：联机独立账本（与单人生涯并列展示，不混算胜率/骰币/段位）
+  var mp = getMpStats();
+  if (mp.rounds > 0 || mp.seriesWon > 0 || mp.seriesLost > 0) {
+    var mpTotal = mp.wins + mp.losses;
+    var mpRate = mpTotal > 0 ? Math.round(mp.wins / mpTotal * 100) : 0;
+    html += '<div style="font-size:16px;margin:20px 0 12px">' + I18N.t('联机战绩（独立账本）') + '</div>';
+    html += '<div>' + I18N.t('联机局数') + ': ' + mp.rounds + ' · ' + I18N.t('胜率') + ': ' + mpRate + '% (W' + mp.wins + '/L' + mp.losses + ')</div>';
+    html += '<div>' + I18N.t('最高连胜') + ': ' + mp.bestStreak + ' · ' + I18N.t('系列赛') + ': ' + mp.seriesWon + ' - ' + mp.seriesLost + '</div>';
+    html += '<div style="font-size:12px;opacity:0.7;margin-top:4px">' + I18N.t('联机不产生骰币、不影响段位与每日任务') + '</div>';
+  }
   html += '<div style="font-size:16px;margin-bottom:12px">' + I18N.t('分战绩') + '</div>';
   var modes = ['liar','red','bigsmall','oddeven','straight','redblue'];
   var modeNames = {liar:I18N.t('吹牛'),red:I18N.t('红点'),bigsmall:I18N.t('大小'),oddeven:I18N.t('单双'),straight:I18N.t('顺子'),redblue:I18N.t('红蓝')};
@@ -5783,6 +6538,208 @@ function showStats() {
 }
 function closeStats() {
   document.getElementById('statsOverlay').style.display = 'none';
+}
+
+// ============ ③ 锦标赛：骰王争霸赛 ============
+// 形态：一台设备开赛，8 个席位，人类不足由 AI 补足（本地淘汰赛，不依赖网络）。
+// 赛制：每场对决三局两胜；每局由「先手方」自动选取玩法；8→4→2→1 淘汰到冠军。
+// 冠军若为人类，解锁「骰王之王」。人类参与的那场由玩家实玩，其余场次按实力模拟。
+var TNT = {
+  players: [],
+  rounds: [],
+  roundIdx: 0,
+  series: null,
+  champion: null,
+  awaitingRound: false
+};
+var TNT_MODES = ['liar', 'red', 'redblue', 'bigsmall', 'oddeven', 'straight'];
+var TNT_MODE_NAMES = { liar: '吹牛', red: '红点', redblue: '红蓝', bigsmall: '大小', oddeven: '单双', straight: '顺子' };
+var TNT_ROUND_NAMES = ['1/4 决赛', '半决赛', '决赛'];
+var TNT_AI_NAMES = ['阿骰', '豹子头', '六六顺', '红中点', '顺子王', '摇骰客', '老千'];
+
+function tntAllPlayers() {
+  // 人类 1 席 + 7 个 AI；实力略作区分，避免全 AI 对局退化成纯掷硬币
+  var list = [{ name: I18N.t('你'), human: true, power: 0.56 }];
+  for (var i = 0; i < TNT_AI_NAMES.length; i++) {
+    list.push({ name: TNT_AI_NAMES[i], human: false, power: 0.42 + (i % 5) * 0.04 });
+  }
+  return list;
+}
+
+function tntPair(list) {
+  var ms = [];
+  for (var i = 0; i + 1 < list.length; i += 2) {
+    ms.push({ a: list[i], b: list[i + 1], winner: null, winsA: 0, winsB: 0 });
+  }
+  return ms;
+}
+
+function tntBuild() {
+  TNT.players = tntAllPlayers();
+  TNT.rounds = [tntPair(TNT.players)];
+  TNT.roundIdx = 0;
+  TNT.series = null;
+  TNT.champion = null;
+  TNT.awaitingRound = false;
+}
+
+function tntCurrentMatch() {
+  var ms = TNT.rounds[TNT.roundIdx] || [];
+  for (var i = 0; i < ms.length; i++) if (!ms[i].winner) return ms[i];
+  return null;
+}
+
+function tntOpen() {
+  if (!TNT.rounds.length) tntBuild();
+  tntRender();
+  document.getElementById('tntOverlay').classList.add('show');
+}
+
+function tntClose() {
+  document.getElementById('tntOverlay').classList.remove('show');
+}
+
+function tntRender() {
+  var body = document.getElementById('tntBody');
+  var btn = document.getElementById('tntMainBtn');
+  if (!body) return;
+  var html = '';
+  if (TNT.champion) {
+    html += '<div class="tnt-champ">🏆 ' + I18N.t('冠军：{n}', { n: TNT.champion.name }) + '</div>';
+    if (TNT.champion.human) html += '<div class="tnt-champ">' + I18N.t('👑 解锁称号：骰王之王') + '</div>';
+  }
+  for (var r = 0; r < TNT.rounds.length; r++) {
+    var title = TNT_ROUND_NAMES[r] ? I18N.t(TNT_ROUND_NAMES[r]) : I18N.t('第 {n} 轮', { n: r + 1 });
+    html += '<div class="tnt-round"><div class="tnt-round-title">' + title + '</div>';
+    var ms = TNT.rounds[r];
+    for (var i = 0; i < ms.length; i++) {
+      var m = ms[i];
+      var cls = 'tnt-match' + (m.winner ? ' done' : (TNT.series && TNT.series.match === m ? ' live' : ''));
+      html += '<div class="' + cls + '">'
+        + '<span class="' + (m.winner === m.a ? 'tnt-win' : '') + '">' + m.a.name + '</span>'
+        + '<b>' + m.winsA + ' : ' + m.winsB + '</b>'
+        + '<span class="' + (m.winner === m.b ? 'tnt-win' : '') + '">' + m.b.name + '</span>'
+        + '</div>';
+    }
+    html += '</div>';
+  }
+  body.innerHTML = html;
+  if (btn) btn.textContent = TNT.champion ? I18N.t('再来一届') : I18N.t('开始比赛');
+}
+
+/** 记录一局结果（side: 0 = a 胜, 1 = b 胜），胜者成为下一局先手 */
+function tntRecordGame(side) {
+  var s = TNT.series;
+  if (!s) return;
+  if (side === 0) s.winsA++; else s.winsB++;
+  s.first = side;
+}
+
+/** 无头掷骰（不碰 DOM，供全 AI 对局模拟用） */
+function tntRollDice(n) {
+  var out = [];
+  for (var i = 0; i < n; i++) out.push(Math.floor(Math.random() * 6) + 1);
+  return out;
+}
+
+/**
+ * 全 AI 对局模拟一局。
+ * 走**真实规则**：按本局玩法发牌，两个 AI 真的轮流叫点直到开盅。
+ * 目前覆盖吹牛（③.1 第一批）；其余玩法仍退回实力抽样，待补齐。
+ */
+function tntSimulateGame(a, b, mode) {
+  // 六玩法现在全部走真实规则的无头模拟，a/b 的实力值不再参与
+  return simulateAnyGame(mode, tntRollDice(DICE_PER_PLAYER), tntRollDice(DICE_PER_PLAYER));
+}
+
+/** 主按钮：开一场 / 再来一届 */
+function tntPrimary() {
+  if (TNT.champion) { tntBuild(); tntRender(); return; }
+  if (TNT.series) return; // 对局进行中，防重复开
+  var m = tntCurrentMatch();
+  if (!m) return;
+  TNT.series = {
+    match: m,
+    winsA: 0,
+    winsB: 0,
+    round: 0,
+    first: Math.random() < 0.5 ? 0 : 1,
+    humanSide: m.a.human ? 0 : (m.b.human ? 1 : -1)
+  };
+  tntRender();
+  tntNextGame();
+}
+
+/** 推进本场对决：未分胜负就开下一局，人类在场则实玩，否则模拟 */
+function tntNextGame() {
+  var s = TNT.series;
+  if (!s) return;
+  if (s.winsA >= 2 || s.winsB >= 2) { tntEndMatch(); return; }
+  s.round++;
+  // 由先手方自动选取本局玩法（首局先手随机，之后是上一局胜者）
+  s.mode = TNT_MODES[Math.floor(Math.random() * TNT_MODES.length)];
+  if (s.humanSide < 0) {
+    tntRecordGame(tntSimulateGame(s.match.a, s.match.b, s.mode));
+    tntNextGame();
+    return;
+  }
+  tntPlayHumanGame(s);
+}
+
+/** 一场对决结束：写回对局树，必要时推进下一轮 */
+function tntEndMatch() {
+  var s = TNT.series;
+  s.match.winsA = s.winsA;
+  s.match.winsB = s.winsB;
+  s.match.winner = s.winsA > s.winsB ? s.match.a : s.match.b;
+  TNT.series = null;
+  var ms = TNT.rounds[TNT.roundIdx];
+  var allDone = ms.every(function (m) { return !!m.winner; });
+  if (allDone) {
+    if (ms.length === 1) {
+      TNT.champion = ms[0].winner;
+      tntOnChampion();
+    } else {
+      TNT.rounds.push(tntPair(ms.map(function (m) { return m.winner; })));
+      TNT.roundIdx++;
+    }
+  }
+  tntRender();
+}
+
+/** 人类参与的对局：切到本局玩法并开新局 */
+function tntPlayHumanGame(s) {
+  TNT.awaitingRound = true;
+  document.getElementById('tntOverlay').classList.remove('show');
+  switchMode(s.mode);
+  showToast('🏆 ' + I18N.t('本局玩法：{m}', { m: I18N.t(TNT_MODE_NAMES[s.mode] || s.mode) }), 2400);
+  newRound();
+}
+
+/** 人类这一局的结果（由 onSettle 调用） */
+function tntReportHumanRound(playerWon) {
+  var s = TNT.series;
+  if (!s || !TNT.awaitingRound) return;
+  tntRecordGame(playerWon ? s.humanSide : (1 - s.humanSide));
+}
+
+/** 看完结算后推进（由 closeModal 调用） */
+function tntAfterHumanRound() {
+  if (!TNT.series || !TNT.awaitingRound) return;
+  TNT.awaitingRound = false;
+  tntNextGame();
+  if (TNT.series) tntRender();
+  else tntOpen();
+}
+
+/** 冠军产生：人类夺冠即解锁「骰王之王」 */
+function tntOnChampion() {
+  if (!TNT.champion || !TNT.champion.human) return;
+  var st = DiceStore.get('dice_streak', {}) || {};
+  st.king = true;
+  DiceStore.set('dice_streak', st);
+  FX.confetti(true);
+  showToast('👑 ' + I18N.t('骰王之王 解锁！'), 3200);
 }
 
 function buyItem(type) {
@@ -5818,6 +6775,11 @@ function updateShopCoins() {
 }
 var shieldActive = false;
 function useItemInGame(type) {
+  // A6 止血：联机局禁用道具（UI 已隐藏，这里再挡住控制台直调）
+  if (typeof mpGameActive !== 'undefined' && mpGameActive === true) {
+    showToast('🚫 ' + I18N.t('联机对局不可使用道具'));
+    return;
+  }
   if (!useItem(type)) {
     showToast('❌ ' + I18N.t('骰币不足'));
     return;
@@ -5874,10 +6836,13 @@ function toggleFx(on) {
   FX.enabled = on;
   DiceStore.set('dice_fx', on);
 }
+// 两档难度：master = 本地「电脑难度」，jev = 接入 Jev 决策模型的「JEV 难度」
 function setAiLevel(lvl) {
-  liarLevel = lvl;
-  DiceStore.set('dice_ai_level', lvl);
-  syncAiLevelBtns();
+  liarLevel = (lvl === 'jev') ? 'jev' : 'master';
+  DiceStore.set('dice_ai_level', liarLevel);
+  var sa = document.getElementById('settingAiLevel');
+  if (sa) sa.value = liarLevel;
+  showToast('🧠 ' + I18N.t(liarLevel === 'jev' ? 'JEV 难度' : '电脑难度'));
 }
 function resetOddevenChain() {
   oddevenWinChain = 0;
@@ -5923,6 +6888,12 @@ function clearAllData() {
 
     <label>✨ <span data-i18n="特效">特效</span></label>
     <label class="switch"><input type="checkbox" id="settingFx" onchange="toggleFx(this.checked)"><span class="slider"></span></label>
+
+    <label>🧠 <span data-i18n="AI 难度">AI 难度</span></label>
+    <select id="settingAiLevel" onchange="setAiLevel(this.value)">
+      <option value="master" data-i18n="电脑难度">电脑难度</option>
+      <option value="jev" data-i18n="JEV 难度">JEV 难度</option>
+    </select>
 
     <button onclick="resetOddevenChain()" class="settings-btn" data-i18n="重置单双连中链">重置单双连中链</button>
     <label>🛒 <span data-i18n="道具商店">道具商店</span> (<span id="shopCoins">0</span> 💰)</label>

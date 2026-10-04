@@ -7,6 +7,7 @@
  */
 
 import { readFileSync } from 'node:fs'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 import { fileURLToPath } from 'node:url'
 import type { Context } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-host-webserver'
@@ -55,6 +56,119 @@ function fileFor(pathname: string): string | undefined {
 }
 
 /**
+ * JEV 决策代理端点。
+ *
+ * 游戏文档跑在 opaque-origin iframe（sandbox 无 allow-same-origin）里，
+ * 拿不到宿主凭据；所以「JEV 难度」必须由宿主带 key 转发，key 永不进浏览器。
+ */
+export const AI_PATH = GAME_BASE + '/ai'
+
+/** Jev System One 决策端点与模型（免费通道，实测约 800ms、cost 0）。 */
+const JEV_ENDPOINT = 'https://opencode.ai/zen/v1/systemone'
+const JEV_MODEL = 'jev-1.13-free'
+/** 单次局面描述的体积上限（防御性，正常局面只有几百字节）。 */
+const AI_MAX_BODY_BYTES = 32 * 1024
+/** 上游超时：超过就让游戏侧回退到本地「电脑难度」，不让对局卡死。 */
+const AI_TIMEOUT_MS = 15000
+
+/** iframe 的 Origin 是 null，代理必须显式放行跨源。 */
+const AI_CORS: Record<string, string> = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-headers': 'content-type',
+  'access-control-allow-methods': 'POST, OPTIONS',
+  'cache-control': 'no-store',
+}
+
+function aiJson(res: ServerResponse, status: number, body: unknown): void {
+  res.writeHead(status, { ...AI_CORS, 'content-type': 'application/json; charset=utf-8' })
+  res.end(JSON.stringify(body))
+}
+
+function readBodyCapped(req: IncomingMessage, limit: number): Promise<string | null> {
+  return new Promise(resolve => {
+    const chunks: Buffer[] = []
+    let size = 0
+    let overflowed = false
+    req.on('data', (c: Buffer) => {
+      if (overflowed) return
+      size += c.length
+      if (size > limit) {
+        // 不要 destroy：连接得活着才写得回 413；剩余数据丢弃即可。
+        overflowed = true
+        resolve(null)
+        return
+      }
+      chunks.push(c)
+    })
+    req.on('end', () => {
+      if (!overflowed) resolve(Buffer.concat(chunks).toString('utf8'))
+    })
+    req.on('error', () => {
+      if (!overflowed) resolve(null)
+    })
+  })
+}
+
+/**
+ * 转发一局局面给 Jev，并把原始 answers 透传给游戏。
+ * 不缓存、不落盘、不记录 state 内容（局面里含双方骰子）。
+ */
+async function handleAi(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, AI_CORS)
+    res.end()
+    return
+  }
+  if (req.method !== 'POST') {
+    aiJson(res, 405, { error: 'method-not-allowed' })
+    return
+  }
+
+  const key = (process.env.OPENCODEZEN_API_KEY ?? '').trim()
+  if (!key) {
+    aiJson(res, 503, { error: 'jev-key-missing' })
+    return
+  }
+
+  const raw = await readBodyCapped(req, AI_MAX_BODY_BYTES)
+  if (raw === null) {
+    aiJson(res, 413, { error: 'body-too-large' })
+    return
+  }
+
+  let parsed: { state?: unknown; questions?: unknown }
+  try {
+    parsed = JSON.parse(raw) as { state?: unknown; questions?: unknown }
+  } catch {
+    aiJson(res, 400, { error: 'bad-json' })
+    return
+  }
+  if (
+    typeof parsed.state !== 'string'
+    || parsed.state.length === 0
+    || !parsed.questions
+    || typeof parsed.questions !== 'object'
+  ) {
+    aiJson(res, 400, { error: 'bad-payload' })
+    return
+  }
+
+  try {
+    const upstream = await fetch(JEV_ENDPOINT, {
+      method: 'POST',
+      headers: { authorization: 'Bearer ' + key, 'content-type': 'application/json' },
+      body: JSON.stringify({ model: JEV_MODEL, state: parsed.state, questions: parsed.questions }),
+      signal: AbortSignal.timeout(AI_TIMEOUT_MS),
+    })
+    const text = await upstream.text()
+    res.writeHead(upstream.status, { ...AI_CORS, 'content-type': 'application/json; charset=utf-8' })
+    res.end(text)
+  } catch (e) {
+    aiJson(res, 502, { error: 'jev-unreachable', detail: String(e) })
+  }
+}
+
+/**
  * Build the /dice-game route family (one prefix route serving the game's
  * three static files).
  * @param deps - optional overrides (assets dir) for tests.
@@ -66,19 +180,26 @@ export function makeRoutes(deps: DiceGameRouteDeps = {}): WebRoute[] {
   const readAsset = (name: string): Buffer => readFileSync(assetsDir + '/' + name)
 
   const handler: WebRoute['handler'] = async (req, res) => {
-    // Only GET/HEAD make sense for static assets.
-    const method = req.method ?? 'GET'
-    if (method !== 'GET' && method !== 'HEAD') {
-      res.writeHead(405, { 'content-type': 'text/plain; charset=utf-8', allow: 'GET, HEAD' })
-      res.end('method not allowed')
-      return
-    }
     let pathname: string
     try {
       pathname = new URL(req.url ?? '/', 'http://localhost').pathname
     } catch {
       res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' })
       res.end('bad request')
+      return
+    }
+
+    // JEV 决策代理（POST）：宿主带 key 转发，游戏侧只看到同源端点。
+    if (pathname === AI_PATH) {
+      await handleAi(req, res)
+      return
+    }
+
+    // 其余路径是静态资源，只接受 GET/HEAD。
+    const method = req.method ?? 'GET'
+    if (method !== 'GET' && method !== 'HEAD') {
+      res.writeHead(405, { 'content-type': 'text/plain; charset=utf-8', allow: 'GET, HEAD' })
+      res.end('method not allowed')
       return
     }
     const file = fileFor(pathname)
