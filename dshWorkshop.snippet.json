@@ -1,0 +1,40 @@
+{
+  "schema": "omdsh-workshop-package/v1",
+  "type": "plugin",
+  "integration": {
+    "protocol": "harness-cordis",
+    "artifact": "cordis.patch.yml"
+  },
+  "install": {
+    "mode": "guided",
+    "adapter": "third-party",
+    "failurePolicy": "manual",
+    "touchesCurrentBeforeActivation": false
+  },
+  "lifecycle": {
+    "activation": "immediate",
+    "dispose": "unknown"
+  },
+  "permissions": [
+    "fs:read",
+    "ui:inject",
+    "network:peerjs"
+  ],
+  "compatibility": {
+    "dshVersions": [
+      "0.2.0-rc.2"
+    ]
+  },
+  "capability": {
+    "id": "dice-game-panel",
+    "kind": "ui",
+    "invocation": "打开 DSH Web 界面，点击侧边栏「🎲 骰子大作战」",
+    "expected": "中央栏渲染游戏面板并可开局：单人 vs AI 与 PeerJS 联机两种模式均可进入"
+  },
+  "evidence": {
+    "install": null,
+    "failureIsolation": null,
+    "hotReload": null,
+    "remove": null
+  }
+}
