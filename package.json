@@ -81,8 +81,7 @@
     },
     "permissions": [
       "fs:read",
-      "ui:inject",
-      "network:peerjs"
+      "ui:inject"
     ],
     "compatibility": {
       "dshVersions": [
@@ -93,7 +92,7 @@
       "id": "dice-game-panel",
       "kind": "ui",
       "invocation": "打开 DSH Web 界面，点击侧边栏「🎲 骰子大作战」",
-      "expected": "中央栏渲染游戏面板并可开局：单人 vs AI 与 PeerJS 联机两种模式均可进入"
+      "expected": "中央栏渲染游戏面板并可开局：6 种玩法进入单人 vs AI 模式；联机代码在仓库内但本版 MP_DISABLED=true 暂缓上线"
     },
     "evidence": {
       "install": null,
